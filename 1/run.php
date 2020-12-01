@@ -2,6 +2,7 @@
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
+	sort($input);
 
 	function part1($input) {
 		for ($i = 0; $i < count($input); $i++) {
