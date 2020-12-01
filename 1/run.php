@@ -4,21 +4,21 @@
 	$input = getInputLines();
 
 	function part1($input) {
-		foreach ($input as $one) {
-			foreach ($input as $two) {
-				if ($one + $two == 2020) {
-					return [$one, $two];
+		for ($i = 0; $i < count($input); $i++) {
+			for ($j = $i + 1; $j < count($input); $j++) {
+				if ($input[$i] + $input[$j] == 2020) {
+					return [$input[$i], $input[$j]];
 				}
 			}
 		}
 	}
 
 	function part2($input) {
-		foreach ($input as $one) {
-			foreach ($input as $two) {
-				foreach ($input as $three) {
-					if ($one + $two + $three == 2020) {
-						return [$one, $two, $three];
+		for ($i = 0; $i < count($input); $i++) {
+			for ($j = $i + 1; $j < count($input); $j++) {
+				for ($k = $j + 1; $k < count($input); $k++) {
+					if ($input[$i] + $input[$j] + $input[$k] == 2020) {
+						return [$input[$i], $input[$j], $input[$k]];
 					}
 				}
 			}
