@@ -13,7 +13,7 @@
 			$part1++;
 		}
 
-		if ($password[$start - 1] != $password[$end - 1] && ($password[$start - 1] == $char || $password[$end - 1] == $char)) {
+		if (($password[$start - 1] == $char) != ($password[$end - 1] == $char)) {
 			$part2++;
 		}
 	}
