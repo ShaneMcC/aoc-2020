@@ -1,11 +1,13 @@
-FROM php:8.0-cli-alpine
+FROM keinos/php8-jit:latest
 
 ADD entrypoint.sh /entrypoint.sh
 
+USER root
+
 RUN apk add --no-cache bash gmp gmp-dev && \
     docker-php-source extract && \
-    if [ -e /usr/src/php/php-src-master ]; then mv /usr/src/php/php-src-master/* /usr/src/php/; fi && \
     docker-php-ext-install gmp && \
+    ln -s /usr/local/bin/php /usr/bin/php && \
     chmod +x /entrypoint.sh && \
     chown -R nobody:nobody /entrypoint.sh
 

@@ -10,7 +10,7 @@ SHELL="0";
 
 while true; do
 	case "$1" in
-		--php74|--php8)
+		--php74|--php8-jit)
 			IMAGE=${BASEIMAGE}-${1/--/}
 			DOCKERFILE=${BASEDOCKERFILE}-${1/--/}
 			;;
