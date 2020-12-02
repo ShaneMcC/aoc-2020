@@ -5,7 +5,7 @@
 
 	$part1 = $part2 = 0;
 	foreach ($input as $line) {
-		preg_match('#([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)#', $line, $m);
+		preg_match('#([0-9]+)-([0-9]+) (.): (.*)#', $line, $m);
 		[$all, $start, $end, $char, $password] = $m;
 
 		$c = substr_count($password, $char);
