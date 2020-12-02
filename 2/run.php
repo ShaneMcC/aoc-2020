@@ -4,19 +4,22 @@
 	$input = getInputLines();
 
 	$part1 = 0;
+	$part2 = 0;
 	$entries = [];
 	foreach ($input as $line) {
 		preg_match('#(.*)-(.*) (.*): (.*)#SADi', $line, $m);
 		[$all, $start, $end, $char, $password] = $m;
 
 		$c = substr_count($password, $char);
-		$valid = $c >= $start && $c <= $end;
+		$valid1 = $c >= $start && $c <= $end;
 
-		if ($valid) { $part1++; }
+		if ($valid1) { $part1++; }
 
-		$entries[] = ['start' => $start, 'end' => $end, 'char' => $char, 'password' => $password, 'valid' => $valid];
+		$valid2 = $password[$start - 1] != $password[$end - 1] && ($password[$start - 1] == $char || $password[$end - 1] == $char);
+		if ($valid2) { $part2++; }
+
+		$entries[] = ['start' => $start, 'end' => $end, 'char' => $char, 'password' => $password, 'valid1' => $valid2, 'valid2' => $valid2];
 	}
 
-	// var_dump($entries);
-
 	echo 'Part 1: ', $part1, "\n";
+	echo 'Part 2: ', $part2, "\n";
