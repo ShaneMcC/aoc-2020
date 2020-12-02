@@ -1,8 +1,9 @@
-FROM alpine:latest
+FROM alpine:edge
 
 ADD entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache php7 php7-gmp bash && \
+RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing php8 php8-gmp bash && \
+    ln -s /usr/bin/php8 /usr/bin/php && \
     chmod +x /entrypoint.sh && \
     chown -R nobody:nobody /entrypoint.sh
 

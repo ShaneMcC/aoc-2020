@@ -1,11 +1,12 @@
 #!/bin/bash
 
-BASEIMAGE=shanemcc/aoc-2020-01
+BASEIMAGE=shanemcc/aoc-2020-02
 BASEDOCKERFILE="Dockerfile"
 
 IMAGE=${BASEIMAGE}
 DOCKERFILE=${BASEDOCKERFILE}
 FORCEBUILD="0";
+SHELL="0";
 
 while true; do
 	case "$1" in
@@ -15,6 +16,9 @@ while true; do
 			;;
 		--build)
 			FORCEBUILD="1";
+			;;
+		--shell)
+			SHELL="1";
 			;;
 		*)
 			break;
@@ -32,4 +36,8 @@ if [ $? -ne 0 -o ${FORCEBUILD} = "1" ]; then
 	echo "Image build complete."
 fi
 
-docker run --rm -it -v $(pwd):/code $IMAGE /entrypoint.sh $@
+if [ "${SHELL}" = "1" ]; then
+	docker run --rm -it -v $(pwd):/code $IMAGE bash
+else
+	docker run --rm -it -v $(pwd):/code $IMAGE /entrypoint.sh $@
+fi;
