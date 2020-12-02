@@ -3,22 +3,19 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
 
-	$part1 = 0;
-	$part2 = 0;
-	$entries = [];
+	$part1 = $part2 = 0;
 	foreach ($input as $line) {
-		preg_match('#(.*)-(.*) (.*): (.*)#SADi', $line, $m);
+		preg_match('#([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)#', $line, $m);
 		[$all, $start, $end, $char, $password] = $m;
 
 		$c = substr_count($password, $char);
-		$valid1 = $c >= $start && $c <= $end;
+		if ($c >= $start && $c <= $end) {
+			$part1++;
+		}
 
-		if ($valid1) { $part1++; }
-
-		$valid2 = $password[$start - 1] != $password[$end - 1] && ($password[$start - 1] == $char || $password[$end - 1] == $char);
-		if ($valid2) { $part2++; }
-
-		$entries[] = ['start' => $start, 'end' => $end, 'char' => $char, 'password' => $password, 'valid1' => $valid2, 'valid2' => $valid2];
+		if ($password[$start - 1] != $password[$end - 1] && ($password[$start - 1] == $char || $password[$end - 1] == $char)) {
+			$part2++;
+		}
 	}
 
 	echo 'Part 1: ', $part1, "\n";
