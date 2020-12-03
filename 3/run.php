@@ -14,17 +14,25 @@
 		return $line[$x % count($line)];
 	}
 
-	$y = 0;
-	$x = 0;
-	$part1 = 0;
+	function getSlope($map, $left = 3, $down = 1) {
+		$y = 0;
+		$x = 0;
+		$count = 0;
 
-	while ($y < count($map)) {
-		$x += 3;
-		$y += 1;
+		while ($y < count($map)) {
+			$x += $left;
+			$y += $down;
 
-		$tile = getTile($map, $x, $y);
+			$tile = getTile($map, $x, $y);
 
-		if ($tile == '#') { $part1++; }
+			if ($tile == '#') { $count++; }
+		}
+
+		return $count;
 	}
 
+	$part1 = getSlope($map, 3, 1);
 	echo 'Part 1: ', $part1, "\n";
+
+	$part2 = getSlope($map, 1, 1) * getSlope($map, 3, 1) * getSlope($map, 5, 1) * getSlope($map, 7, 1) * getSlope($map, 1, 2);
+	echo 'Part 2: ', $part2, "\n";
