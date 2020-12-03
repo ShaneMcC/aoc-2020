@@ -22,7 +22,7 @@
 
 	$part2 = [];
 	$part2[] = getSlope($map, 1, 1);
-	$part2[] = getSlope($map, 3, 1);
+	$part2[] = $part1;
 	$part2[] = getSlope($map, 5, 1);
 	$part2[] = getSlope($map, 7, 1);
 	$part2[] = getSlope($map, 1, 2);
