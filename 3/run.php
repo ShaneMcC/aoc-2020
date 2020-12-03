@@ -6,8 +6,9 @@
 	function getSlope($map, $left = 3, $down = 1) {
 		$x = $y = $count = 0;
 
+		$width = count($map[0]);
 		do {
-			$tile = $map[$y][$x % count($map[$y])];
+			$tile = $map[$y][$x % $width];
 			if ($tile == '#') { $count++; }
 
 			$x += $left;
@@ -20,5 +21,11 @@
 	$part1 = getSlope($map, 3, 1);
 	echo 'Part 1: ', $part1, "\n";
 
-	$part2 = getSlope($map, 1, 1) * getSlope($map, 3, 1) * getSlope($map, 5, 1) * getSlope($map, 7, 1) * getSlope($map, 1, 2);
-	echo 'Part 2: ', $part2, "\n";
+	$part2 = [];
+	$part2[] = getSlope($map, 1, 1);
+	$part2[] = getSlope($map, 3, 1);
+	$part2[] = getSlope($map, 5, 1);
+	$part2[] = getSlope($map, 7, 1);
+	$part2[] = getSlope($map, 1, 2);
+
+	echo 'Part 2: ', implode(' * ', $part2), ' = ', array_product($part2), "\n";
