@@ -8,8 +8,7 @@
 
 		$width = count($map[0]);
 		do {
-			$tile = $map[$y][$x % $width];
-			if ($tile == '#') { $count++; }
+			if ($map[$y][$x % $width] == '#') { $count++; }
 
 			$x += $left;
 			$y += $down;
