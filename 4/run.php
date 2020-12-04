@@ -1,27 +1,21 @@
 #!/usr/bin/php
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
-	$input = explode("\n", getInputContent());
 
 	$passports = [];
-
 	$passport = [];
-
-	foreach ($input as $line) {
+	foreach (explode("\n", getInputContent()) as $line) {
 		if (empty($line)) {
 			if (count($passport) > 0) { $passports[] = $passport; }
 			$passport = [];
 		} else {
-			$bits = explode(' ', $line);
+			foreach (explode(' ', $line) as $bit) {
+				$bits = explode(':', $bit, 2);
 
-			foreach ($bits as $bit) {
-				$kvbit = explode(':', $bit, 2);
-
-				$passport[$kvbit[0]] = ['val' => $kvbit[1]];
+				$passport[$bits[0]] = $bits[1];
 			}
 		}
 	}
-
 	if (count($passport) > 0) { $passports[] = $passport; }
 
 	$fields = [];
@@ -62,13 +56,11 @@
 
 	function validateField($val, $validator) {
 		if (isset($validator['regex'])) {
-
 			 if (preg_match($validator['regex'], $val, $m)) {
 			 	if (isset($m[1])) { $val = $m[1]; } // Future matches should be on the matched value.
 			 } else {
 			 	return false;
 			 }
-
 		}
 
 		if (isset($validator['min']) && $val < $validator['min']) { return false; }
@@ -91,7 +83,7 @@
 			if (isset($p[$key]) && isset($info['validation'])) {
 				$fieldValid = false;
 				foreach ($info['validation'] as $v) {
-					if (validateField($p[$key]['val'], $v)) {
+					if (validateField($p[$key], $v)) {
 						$fieldValid = true;
 						break;
 					}
