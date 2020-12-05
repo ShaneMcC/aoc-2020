@@ -18,26 +18,32 @@
 		foreach ($bits as $bit) {
 			if ($bit == 'F') {
 				$RowMax -= ($RowMax - $RowMin) / 2;
-				echo $bit . ' changed row range to: ', $RowMax, ' - ',  $RowMax, "\n";
 			} else if ($bit == 'B') {
 				$RowMin += ($RowMax - $RowMin) / 2;
-				echo $bit . ' changed row range to: ', $RowMax, ' - ',  $RowMax, "\n";
 			} else if ($bit == 'L') {
 				$ColMax -= ($ColMax - $ColMin) / 2;
-				echo $bit . ' changed col range to: ', $ColMin, ' - ',  $ColMax, "\n";
 			} else if ($bit == 'R') {
 				$ColMin += ($ColMax - $ColMin) / 2;
-				echo $bit . ' changed col range to: ', $ColMin, ' - ',  $ColMax, "\n";
 			}
 		}
 
 		$seatId = $RowMin * 8 + $ColMin;
 
-		$entries[] = ['data' => $line, 'row' => $RowMin, 'col' => $ColMin, 'seatId' => $seatId];
+		$entries[$seatId] = ['data' => $line, 'row' => $RowMin, 'col' => $ColMin, 'seatId' => $seatId];
 
 		$part1 = max($seatId, $part1);
 	}
 
-	var_dump($entries);
+	$seats = array_keys($entries);
+	sort($seats);
 
-	echo $part1, "\n";
+	$part2 = 0;
+	foreach ($seats as $s) {
+		if ($part2 == 0) { $part2 = $s; continue; }
+		if ($part2 + 1 != $s) { $part2 = $part2 + 1; break; }
+		$part2 = $s;
+	}
+
+
+	echo 'Part 1: ', $part1, "\n";
+	echo 'Part 2: ', $part2, "\n";
