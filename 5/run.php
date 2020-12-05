@@ -6,28 +6,25 @@
 
 	$seats = [];
 	foreach (getInputLines() as $line) {
-		$minCol = $minRow = 0;
+		/* $minCol = $minRow = 0;
 		$maxRow = 128;
 		$maxCol = 8;
 
 		foreach (str_split($line) as $bit) {
-			if ($bit == 'F') {
-				$maxRow -= ($maxRow - $minRow) / 2;
-			} else if ($bit == 'B') {
-				$minRow += ($maxRow - $minRow) / 2;
-			} else if ($bit == 'L') {
-				$maxCol -= ($maxCol - $minCol) / 2;
-			} else if ($bit == 'R') {
-				$minCol += ($maxCol - $minCol) / 2;
-			}
+			if ($bit == 'F') { $maxRow -= ($maxRow - $minRow) / 2; }
+			else if ($bit == 'B') { $minRow += ($maxRow - $minRow) / 2; }
+			else if ($bit == 'L') { $maxCol -= ($maxCol - $minCol) / 2; }
+			else if ($bit == 'R') { $minCol += ($maxCol - $minCol) / 2; }
 		}
+		$seatId = ($minRow * 8) + $minCol; */
 
-		$seatId = ($minRow * 8) + $minCol;
-		$seats[] = $seatId;
+		$seatId = bindec(str_replace(['F', 'B', 'L', 'R'], ['0', '1', '0', '1'], $line));
 		$part1 = max($seatId, $part1);
-	}
-	sort($seats);
 
+		$seats[] = $seatId;
+	}
+
+	sort($seats);
 	$part2 = array_shift($seats);
 
 	foreach ($seats as $s) {
