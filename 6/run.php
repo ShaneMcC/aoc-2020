@@ -3,12 +3,10 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 
 	$groups = [];
-	$group = ['members' => 0, 'answers' => []];
-	foreach (explode("\n", getInputContent()) as $line) {
-		if (empty($line)) {
-			if (count($group) > 0) { $groups[] = $group; }
-			$group = ['members' => 0, 'answers' => []];
-		} else {
+	foreach (getInputLineGroups() as $lineGroup) {
+		$group = ['members' => 0, 'answers' => []];
+
+		foreach ($lineGroup as $line) {
 			$group['members']++;
 
 			foreach (str_split($line) as $bit) {
@@ -16,8 +14,9 @@
 				$group['answers'][$bit]++;
 			}
 		}
+
+		$groups[] = $group;
 	}
-	if (count($group) > 0) { $groups[] = $group; }
 
 	$part2 = $part1 = 0;
 	foreach ($groups as $group) {

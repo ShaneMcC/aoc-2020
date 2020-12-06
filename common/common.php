@@ -65,6 +65,29 @@
 	}
 
 	/**
+	 * Get the input as line groups.
+	 * Each group is separated by a blank line in the source file.
+	 * 	 *
+	 * @return File as array of array of lines.
+	 */
+	function getInputLineGroups() {
+		$groups = [];
+		$group = [];
+		foreach (explode("\n", getInputContent()) as $line) {
+			if (empty($line)) {
+				if (count($group) > 0) { $groups[] = $group; }
+				$group = [];
+			} else {
+				$group[] = $line;
+			}
+		}
+		if (count($group) > 0) { $groups[] = $group; }
+
+		return $groups;
+	}
+
+
+	/**
 	 * Get the input as a map.
 	 *
 	 * @return File as a grid[$y][$x].

@@ -3,20 +3,18 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 
 	$passports = [];
-	$passport = [];
-	foreach (explode("\n", getInputContent()) as $line) {
-		if (empty($line)) {
-			if (count($passport) > 0) { $passports[] = $passport; }
-			$passport = [];
-		} else {
+	foreach (getInputLineGroups() as $lineGroup) {
+		$passport = [];
+
+		foreach ($lineGroup as $line) {
 			foreach (explode(' ', $line) as $bit) {
 				$bits = explode(':', $bit, 2);
-
 				$passport[$bits[0]] = $bits[1];
 			}
 		}
+
+		$passports[] = $passport;
 	}
-	if (count($passport) > 0) { $passports[] = $passport; }
 
 	$fields = [];
 	$fields['byr'] = ['required' => true,
