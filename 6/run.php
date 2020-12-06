@@ -2,30 +2,29 @@
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
 
-	$answers = [];
-	$answer = ['_' => 0];
+	$groups = [];
+	$group = ['members' => 0, 'answers' => []];
 	foreach (explode("\n", getInputContent()) as $line) {
 		if (empty($line)) {
-			if (count($answer) > 0) { $answers[] = $answer; }
-			$answer = ['_' => 0];
+			if (count($group) > 0) { $groups[] = $group; }
+			$group = ['members' => 0, 'answers' => []];
 		} else {
-			$answer['_']++;
+			$group['members']++;
 
 			foreach (str_split($line) as $bit) {
-				if (!isset($answer[$bit])) { $answer[$bit] = 0; }
-				$answer[$bit]++;
+				if (!isset($group['answers'][$bit])) { $group['answers'][$bit] = 0; }
+				$group['answers'][$bit]++;
 			}
 		}
 	}
-	if (count($answer) > 0) { $answers[] = $answer; }
+	if (count($group) > 0) { $groups[] = $group; }
 
 	$part2 = $part1 = 0;
-	foreach ($answers as $group) {
-		$part1 += count(array_keys($group)) - 1;
+	foreach ($groups as $group) {
+		$part1 += count(array_keys($group['answers']));
 
-		foreach ($group as $g => $c) {
-			if ($g == '_') { continue; }
-			if ($c == $group['_']) {
+		foreach ($group['answers'] as $a => $c) {
+			if ($c == $group['members']) {
 				$part2++;
 			}
 		}
