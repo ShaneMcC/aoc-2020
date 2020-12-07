@@ -16,11 +16,11 @@
 		}
 	}
 
-	function hasBag($bags, $starter, $wanted) {
+	function containsBag($bags, $starter, $wanted) {
 		$queue = [$starter];
 		while (!empty($queue)) {
 			$type = array_pop($queue);
-			foreach ($bags[$type] as $t => $c) {
+			foreach ($bags[$type] as $t => $_) {
 				$queue[] = $t;
 
 				if ($t == $wanted) { return true; }
@@ -28,13 +28,6 @@
 		}
 
 		return false;
-	}
-
-	$part1 = 0;
-	foreach (array_keys($bags) as $t) {
-		if (hasBag($bags, $t, 'shiny gold')) {
-			$part1++;
-		}
 	}
 
 	function countBags($bags, $type) {
@@ -45,6 +38,13 @@
 		}
 
 		return $count;
+	}
+
+	$part1 = 0;
+	foreach (array_keys($bags) as $t) {
+		if (containsBag($bags, $t, 'shiny gold')) {
+			$part1++;
+		}
 	}
 
 	$part2 = countBags($bags, 'shiny gold') - 1;
