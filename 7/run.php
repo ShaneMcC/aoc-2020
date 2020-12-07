@@ -37,4 +37,17 @@
 		}
 	}
 
+	function countBags($bags, $type) {
+		$count = 1;
+
+		foreach ($bags[$type] as $t => $c) {
+			$count += countBags($bags, $t) * $c;
+		}
+
+		return $count;
+	}
+
+	$part2 = countBags($bags, 'shiny gold') - 1;
+
 	echo 'Part 1: ', $part1, "\n";
+	echo 'Part 2: ', $part2, "\n";
