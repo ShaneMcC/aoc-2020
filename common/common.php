@@ -358,6 +358,19 @@
 		return (substr($haystack, -$length) === $needle);
 	}
 
+	/**
+	 * preg_match that returns just the matches.
+	 *
+	 * @return Matches array, or empty array if no matches.
+	 */
+	function preg_match_return($pattern, $subject, $flags = 0, $offset = 0) {
+		if (preg_match($pattern, $subject, $m, $flags, $offset)) {
+			return $m;
+		} else {
+			return FALSE;
+		}
+	}
+
 	// Remove unneeded stuff when timing.
 	if (getenv("TIMED") === FALSE) {
 		/**

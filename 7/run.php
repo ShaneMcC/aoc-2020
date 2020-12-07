@@ -5,48 +5,49 @@
 
 	$bags = [];
 	foreach ($input as $line) {
-		preg_match('#(.*) bags? contains? (.*)#SADi', $line, $m);
-		[$all, $source, $contains] = $m;
+		[$all, $source, $contains] = preg_match_return('#(.*) bags? contains? (.*)#SADi', $line);
 
-		$bags[$source] = [];
+		if (!isset($bags[$source])) { $bags[$source] = ['container' => [], 'bags' => []]; }
 		foreach (explode(', ', $contains) as $c) {
-			if (preg_match('#([0-9]+) (.*) bags?#SADi', $c, $m)) {
-				$bags[$source][$m[2]] = $m[1];
+			if ([$all, $count, $type] = preg_match_return('#([0-9]+) (.*) bags?#SADi', $c)) {
+				$bags[$source]['bags'][$type] = $count;
+
+				if (!isset($bags[$type])) { $bags[$type] = ['container' => [], 'bags' => []]; }
+				$bags[$type]['container'][] = $source;
 			}
 		}
 	}
 
-	function containsBag($bags, $starter, $wanted) {
-		$queue = [$starter];
+	function countContainers($bags, $wanted) {
+		$count = 0;
+		$found = [];
+		$queue = [$wanted];
 		while (!empty($queue)) {
 			$type = array_pop($queue);
-			foreach ($bags[$type] as $t => $_) {
-				$queue[] = $t;
 
-				if ($t == $wanted) { return true; }
+			foreach ($bags[$type]['container'] as $t) {
+				if (!isset($found[$t])) {
+					$found[$t] = true;
+					$count++;
+					$queue[] = $t;
+				}
 			}
 		}
 
-		return false;
+		return $count;
 	}
 
 	function countBags($bags, $type) {
 		$count = 1;
 
-		foreach ($bags[$type] as $t => $c) {
+		foreach ($bags[$type]['bags'] as $t => $c) {
 			$count += countBags($bags, $t) * $c;
 		}
 
 		return $count;
 	}
 
-	$part1 = 0;
-	foreach (array_keys($bags) as $t) {
-		if (containsBag($bags, $t, 'shiny gold')) {
-			$part1++;
-		}
-	}
-
+	$part1 = countContainers($bags, 'shiny gold');
 	$part2 = countBags($bags, 'shiny gold') - 1;
 
 	echo 'Part 1: ', $part1, "\n";
