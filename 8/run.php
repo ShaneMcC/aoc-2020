@@ -3,23 +3,9 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	require_once(dirname(__FILE__) . '/../common/Day8VM.php');
 	$input = getInputLines();
+	$originalInput = $input;
 
-	$vm = new Day8VM($input);
-
-	$vm->setDebug(isDebug());
-
-	$visited = [];
-	while (true) {
-		$visited[$vm->getLocation()] = true;
-		$vm->step();
-
-		if (isset($visited[$vm->getLocation()]) && $visited[$vm->getLocation()] == true) {
-			echo 'Part 1: ', $vm->getAccumulator(), "\n";
-			break;
-		}
-	}
-
-	function testCode($input, $loopValue = 10) {
+	function codeHasExit($input, $loopValue = 10) {
 		$vm = new Day8VM($input);
 		$vm->setDebug(isDebug());
 
@@ -30,15 +16,16 @@
 			if (!$vm->step()) { break; }
 
 			if (isset($visited[$vm->getLocation()]) && $visited[$vm->getLocation()] >= $loopValue) {
-				return FALSE;
+				return [FALSE, $vm->getAccumulator()];
 			}
 		}
 
-		return $vm->getAccumulator();
+		return [TRUE, $vm->getAccumulator()];
 	}
 
+	$part1 = codeHasExit($input, 1);
+	echo 'Part 1: ', $part1[1], "\n";
 
-	$originalInput = $input;
 	for ($i = 0; $i < count($input); $i++) {
 		$input = $originalInput;
 		$line = $input[$i];
@@ -51,9 +38,9 @@
 			$input[$i] = str_replace('jmp', 'nop', $line);
 		}
 
-		$res = testCode($input);
-		if ($res !== FALSE) {
-			echo 'Part 2: ', $res, "\n";
+		$part2 = codeHasExit($input);
+		if ($part2[0] !== FALSE) {
+			echo 'Part 2: ', $part2[1], "\n";
 			break;
 		}
 	}
