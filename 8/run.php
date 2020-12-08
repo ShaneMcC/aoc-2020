@@ -1,9 +1,49 @@
 #!/usr/bin/php
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
-	require_once(dirname(__FILE__) . '/../common/Day8VM.php');
-	$input = getInputLines();
+	require_once(dirname(__FILE__) . '/../common/VM.php');
+	$input = VM::parseInstrLines(getInputLines());
 	$originalInput = $input;
+
+	class Day8VM extends VM {
+		/**
+		 * Init the opcodes.
+		 */
+		protected function init() {
+			/**
+			 * ACC <val>
+			 *
+			 * Increases or decreases a single global value called the
+			 * accumulator by the value given in the argument.
+			 */
+			$this->instrs['acc'] = function($vm, $args) {
+				return $this->setAccumulator($this->getAccumulator() + $args[0]);
+			};
+
+			/**
+			 * JMP <val>
+			 *
+			 * Jumps to a new instruction relative to itself.
+			 */
+			$this->instrs['jmp'] = function($vm, $args) {
+				return $vm->jump($vm->getLocation() + $args[0]);
+			};
+
+			/**
+			 * NOP
+			 *
+			 * Do nothing, ignores any arguments.
+			 */
+			$this->instrs['nop'] = function($vm, $args) {
+				return;
+			};
+		}
+
+		// Accumulator
+		protected $accumulator = 0;
+		public function getAccumulator() { return $this->accumulator; }
+		public function setAccumulator($value) { $this->accumulator = $value; }
+	}
 
 	function codeHasExit($input, $loopValue = 10) {
 		$vm = new Day8VM($input);
@@ -30,12 +70,12 @@
 		$input = $originalInput;
 		$line = $input[$i];
 
-		if (startsWith($line, "acc")) { continue; }
-
-		if (startsWith($line, "nop")) {
-			$input[$i] = str_replace('jmp', 'jmp', $line);
-		} else if (startsWith($line, "jmp")) {
-			$input[$i] = str_replace('jmp', 'nop', $line);
+		if ($line[0] == "acc") {
+			continue;
+		} else if ($line[0] == "nop") {
+			$input[$i][0] = 'jmp';
+		} else if ($line[0] == "jmp") {
+			$input[$i][0] = 'nop';
 		}
 
 		$part2 = codeHasExit($input, 1);
