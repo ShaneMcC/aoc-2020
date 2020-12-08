@@ -38,7 +38,7 @@
 			$input[$i] = str_replace('jmp', 'nop', $line);
 		}
 
-		$part2 = codeHasExit($input);
+		$part2 = codeHasExit($input, 1);
 		if ($part2[0] !== FALSE) {
 			echo 'Part 2: ', $part2[1], "\n";
 			break;
