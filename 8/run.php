@@ -14,12 +14,12 @@
 		$vm->step();
 
 		if (isset($visited[$vm->getLocation()]) && $visited[$vm->getLocation()] == true) {
-			echo 'Part 1: ', $vm->accum, "\n";
+			echo 'Part 1: ', $vm->getAccumulator(), "\n";
 			break;
 		}
 	}
 
-	function testCode($input) {
+	function testCode($input, $loopValue = 10) {
 		$vm = new Day8VM($input);
 		$vm->setDebug(isDebug());
 
@@ -29,12 +29,12 @@
 			$visited[$vm->getLocation()]++;
 			if (!$vm->step()) { break; }
 
-			if (isset($visited[$vm->getLocation()]) && $visited[$vm->getLocation()] >= 100) {
+			if (isset($visited[$vm->getLocation()]) && $visited[$vm->getLocation()] >= $loopValue) {
 				return FALSE;
 			}
 		}
 
-		return $vm->accum;
+		return $vm->getAccumulator();
 	}
 
 
