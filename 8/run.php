@@ -29,7 +29,7 @@
 			};
 
 			/**
-			 * NOP -Do nothing, ignores any arguments.
+			 * NOP - Do nothing, ignores any arguments.
 			 */
 			$this->instrs['nop'] = function($vm, $args) {
 				return;
