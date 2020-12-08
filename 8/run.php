@@ -18,14 +18,16 @@
 			 * ACC <val> - Increases or decreases a single global accumulator.
 			 */
 			$this->instrs['acc'] = function($vm, $args) {
-				return $this->setAccumulator($this->getAccumulator() + $args[0]);
+				$vm->setAccumulator($vm->getAccumulator() + $args[0]);
+				if ($vm->debug) { return 'Accumulator is now: ' . $vm->getAccumulator(); }
 			};
 
 			/**
 			 * JMP <val> - Jumps to a new instruction relative to itself.
 			 */
 			$this->instrs['jmp'] = function($vm, $args) {
-				return $vm->jump($vm->getLocation() + $args[0]);
+				$vm->jump($vm->getLocation() + $args[0]);
+				if ($vm->debug) { return 'Jumping to: ' . $vm->getNextLocation(); } // Show the next instruction that will be run.
 			};
 
 			/**
@@ -42,14 +44,21 @@
 		$vm->setDebug(isDebug());
 
 		$visited = [];
+		if (isDebug()) { echo '--- VM Started ---.', "\n"; }
 		while (true) {
-			$visited[$vm->getLocation()] = true;
-			if (!$vm->step()) { break; }
+			$visited[$vm->getNextLocation()] = true;
 
-			if (isset($visited[$vm->getLocation()])) {
+			if (!$vm->step()) { break; }
+			if (isset($visited[$vm->getNextLocation()])) {
+				if (isDebug()) { echo '--- VM Looped back to instruction ' . $vm->getNextLocation() . ' ---.', "\n"; }
+
 				return [FALSE, $vm->getAccumulator()];
+			} else {
+
 			}
 		}
+
+		if (isDebug()) { echo '--- VM Exited ---.', "\n"; }
 
 		return [TRUE, $vm->getAccumulator()];
 	}

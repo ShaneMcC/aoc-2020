@@ -245,6 +245,15 @@
 		}
 
 		/**
+		 * Get the next execution location.
+		 *
+		 * @return Location of next execution.
+		 */
+		function getNextLocation() {
+			return $this->location + 1;
+		}
+
+		/**
 		 * Jump to specific location.
 		 *
 		 * @param $loc Location to jump to.
@@ -303,12 +312,20 @@
 				if (isset($this->miscData['pid'])) {
 					echo sprintf('[PID: %2s] ', $this->miscData['pid']);
 				}
-				echo sprintf('(%4s)   %-20s', $this->location, static::instrToString($next)), "\n";
-				usleep($this->sleep);
+				$out = '';
+				$out .= sprintf('(%4s) %-20s', $this->location, static::instrToString($next));
 			}
 			list($instr, $data) = $next;
 			$ins = $this->getInstr($instr);
-			$ins($this, $data);
+			$ret = $ins($this, $data);
+
+			if ($this->debug) {
+				$out .= ' | ';
+				$out .= $ret;
+				echo trim($out), "\n";
+				usleep($this->sleep);
+			}
+
 			return TRUE;
 		}
 
