@@ -67,21 +67,21 @@
 	echo 'Part 1: ', $part1[1], "\n";
 
 	for ($i = 0; $i < count($input); $i++) {
-		$checkCode = $input[$i][0];
+		$changeTo = $checkCode = $input[$i][0];
 		if ($checkCode == "acc") {
 			continue;
 		} else if ($checkCode == "nop") {
-			$input[$i][0] = 'jmp';
+			$changeTo = 'jmp';
 		} else if ($checkCode == "jmp") {
-			$input[$i][0] = 'nop';
+			$changeTo = 'nop';
 		}
-		$part2 = codeHasExit($input, 1);
 
-		// Reset our change.
+		$input[$i][0] = $changeTo;
+		$part2 = codeHasExit($input, 1);
 		$input[$i][0] = $checkCode;
 
 		if ($part2[0] !== FALSE) {
-			echo 'Part 2: ', $part2[1], "\n";
+			echo 'Part 2 (Changed ' . $checkCode . ' instruction at ' . $i . ' to ' . $changeTo . '): ', $part2[1], "\n";
 			break;
 		}
 	}
