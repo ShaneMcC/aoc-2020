@@ -17,36 +17,36 @@
 		return false;
 	}
 
-	$part1 = 0;
-	for ($p = $preambleLen; $p < count($input); $p++) {
-		$sum = $input[$p];
-		$preamble = array_slice($input, $p - $preambleLen, $preambleLen);
+	function getInvalidNumber($input, $preambleLen) {
+		for ($p = $preambleLen; $p < count($input); $p++) {
+			$sum = $input[$p];
+			$preamble = array_slice($input, $p - $preambleLen, $preambleLen);
 
-		if (!findSum($preamble, $sum)) {
-			$part1 = $sum;
-			break;
-		}
-	}
-
-	echo 'Part 1: ', $part1, "\n";
-
-	for ($i = 0; $i < count($input); $i++) {
-		$sum = [$input[$i]];
-
-		for ($j = $i + 1; $j < count($input); $j++) {
-			$sum[] = $input[$j];
-
-			$s = array_sum($sum);
-			if ($s == $part1) {
-				$min = min($sum);
-				$max = max($sum);
-
-				$part2 = $min + $max;
-
-				echo 'Part 2: ', $part2, "\n";
-			} else if ($s > $part1) {
-				break;
+			if (!findSum($preamble, $sum)) {
+				return $sum;
 			}
 		}
-
 	}
+
+	function getEncryptionWeakness($input, $invalidNumber) {
+		for ($i = 0; $i < count($input); $i++) {
+			$sum = [$input[$i]];
+
+			for ($j = $i + 1; $j < count($input); $j++) {
+				$sum[] = $input[$j];
+
+				$s = array_sum($sum);
+				if ($s == $invalidNumber) {
+					return min($sum) + max($sum);
+				} else if ($s > $invalidNumber) {
+					break;
+				}
+			}
+		}
+	}
+
+	$part1 = getInvalidNumber($input, $preambleLen);
+	echo 'Part 1: ', $part1, "\n";
+
+	$part2 = getEncryptionWeakness($input, $part1);
+	echo 'Part 2: ', $part2, "\n";
