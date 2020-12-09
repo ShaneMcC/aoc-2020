@@ -30,15 +30,16 @@
 
 	function getEncryptionWeakness($input, $invalidNumber) {
 		for ($i = 0; $i < count($input); $i++) {
-			$sum = [$input[$i]];
+			$min = $max = $sum = $input[$i];
 
 			for ($j = $i + 1; $j < count($input); $j++) {
-				$sum[] = $input[$j];
+				$sum += $input[$j];
+				$min = min($min, $input[$j]);
+				$max = max($max, $input[$j]);
 
-				$s = array_sum($sum);
-				if ($s == $invalidNumber) {
-					return min($sum) + max($sum);
-				} else if ($s > $invalidNumber) {
+				if ($sum == $invalidNumber) {
+					return $min + $max;
+				} else if ($sum > $invalidNumber) {
 					break;
 				}
 			}
