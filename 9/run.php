@@ -5,10 +5,10 @@
 
 	$preambleLen = isTest() ? 5 : 25;
 
-	function findSum($preamble, $sum) {
-		for ($i = 0; $i < count($preamble); $i++) {
-			for ($j = $i; $j < count($preamble); $j++) {
-				if ($preamble[$i] + $preamble[$j] == $sum) {
+	function findSum($input, $p, $preambleLen) {
+		for ($i = $p - $preambleLen; $i < $p; $i++) {
+			for ($j = $i; $j < $p; $j++) {
+				if ($input[$i] + $input[$j] == $input[$p]) {
 					return true;
 				}
 			}
@@ -19,11 +19,8 @@
 
 	function getInvalidNumber($input, $preambleLen) {
 		for ($p = $preambleLen; $p < count($input); $p++) {
-			$sum = $input[$p];
-			$preamble = array_slice($input, $p - $preambleLen, $preambleLen);
-
-			if (!findSum($preamble, $sum)) {
-				return $sum;
+			if (!findSum($input, $p, $preambleLen)) {
+				return $input[$p];
 			}
 		}
 	}
