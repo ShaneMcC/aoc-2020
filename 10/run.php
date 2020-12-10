@@ -38,13 +38,12 @@
 	$options = [];
 
 	// Initial options from starting position
-	foreach (getOptions($input, $startingPosition, $maxRange) as $o) { $options[$o] = ['value' => $o, 'count' => 1]; }
+	foreach (getOptions($input, $startingPosition, $maxRange) as $o) { $options[$o] = 1; }
 
 	while (!empty($options)) {
-		$firstKey = array_keys($options)[0];
-		$val = $options[$firstKey]['value'];
-		$count = $options[$firstKey]['count'];
-		unset($options[$firstKey]);
+		$val = array_keys($options)[0];
+		$count = $options[$val];
+		unset($options[$val]);
 
 		$next = getOptions($input, $val, $maxRange);
 		if (empty($next)) {
@@ -53,8 +52,8 @@
 			}
 		} else {
 			foreach ($next as $opt) {
-				if (!isset($options[$opt])) { $options[$opt] = ['value' => $opt, 'count' => 0]; }
-				$options[$opt]['count'] += $count;
+				if (!isset($options[$opt])) { $options[$opt] = 0; }
+				$options[$opt] += $count;
 			}
 		}
 	}
