@@ -2,61 +2,61 @@
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
+	sort($input);
 
-	$foo = $input;
-	sort($foo);
-	$prev = $one = $three = 0;
-	foreach ($foo as $i) {
-		if ($prev + 1 == $i) {
-			$one++;
-		} else if ($prev + 3 == $i) {
-			$three++;
+	$startingPosition = 0;
+	$maxRange = 3;
+	$maxValue = max($input) + $maxRange;
+
+	function getPart1($input) {
+		$prev = $one = $three = 0;
+		foreach ($input as $i) {
+			if ($prev + 1 == $i) { $one++; }
+			else if ($prev + 3 == $i) { $three++; }
+			$prev = $i;
 		}
-		$prev = $i;
-	}
-	$three++;
+		$three++; // Final Difference.
 
-	$part1 = $one * $three;
+		return $one * $three;
+	}
+
+	$part1 = getPart1($input);
 	echo 'Part 1: ', $part1, "\n";
 
-	function getOptions($input, $current) {
+	function getOptions($input, $current, $maxRange = 3) {
 		$options = [];
 
-		$next1 = array_search($current + 1, $input);
-		$next2 = array_search($current + 2, $input);
-		$next3 = array_search($current + 3, $input);
-
-		if ($next1 !== FALSE) { $options[] = $input[$next1]; }
-		if ($next2 !== FALSE) { $options[] = $input[$next2]; }
-		if ($next3 !== FALSE) { $options[] = $input[$next3]; }
+		for ($i = 1; $i <= $maxRange; $i++) {
+			$next = array_search($current + $i, $input);
+			if ($next !== FALSE) { $options[] = $input[$next]; }
+		}
 
 		return $options;
 	}
 
-	$max = max($input) + 3;
-
-	$valid = 0;
+	$part2 = 0;
 	$options = [];
-	foreach (getOptions($input, 0) as $o) { $options[$o] = ['count' => 1]; }
+
+	// Initial options from starting position
+	foreach (getOptions($input, $startingPosition, $maxRange) as $o) { $options[$o] = ['value' => $o, 'count' => 1]; }
 
 	while (!empty($options)) {
-		$k = array_keys($options);
-		$last = array_shift($k);
-		$c = $options[$last]['count'];
-		unset($options[$last]);
+		$firstKey = array_keys($options)[0];
+		$val = $options[$firstKey]['value'];
+		$count = $options[$firstKey]['count'];
+		unset($options[$firstKey]);
 
-		$v = getOptions($input, $last);
-		if (empty($v)) {
-			if ($last + 3 >= $max) {
-				$valid += $c;
+		$next = getOptions($input, $val, $maxRange);
+		if (empty($next)) {
+			if ($val + $maxRange >= $maxValue) {
+				$part2 += $count;
 			}
 		} else {
-			foreach ($v as $o) {
-				if (!isset($options[$o])) { $options[$o] = ['count' => 0]; }
-				$options[$o]['count'] += $c;
+			foreach ($next as $opt) {
+				if (!isset($options[$opt])) { $options[$opt] = ['value' => $opt, 'count' => 0]; }
+				$options[$opt]['count'] += $count;
 			}
 		}
 	}
 
-	$part2 = $valid;
 	echo 'Part 2: ', $part2, "\n";
