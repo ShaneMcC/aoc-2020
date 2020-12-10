@@ -9,19 +9,22 @@
 	$maxValue = max($input) + $maxRange;
 
 	function getPart1($input, $maxRange) {
-		$prev = $one = $three = 0;
+		$prev = 0;
+		$possible = range(1, $maxRange);
+		$counts = array_fill_keys($possible, 0);
 		foreach ($input as $i) {
-			if ($prev + 1 == $i) { $one++; }
-			else if ($prev + 3 == $i) { $three++; }
+			foreach ($possible as $p) {
+				if ($prev + $p == $i) { $counts[$p]++; }
+			}
 			$prev = $i;
 		}
-		if ($maxRange == 3) { $three++; }
+		$counts[$maxRange]++; // Max Difference
 
-		return $one * $three;
+		return $counts;
 	}
 
 	$part1 = getPart1($input, $maxRange);
-	echo 'Part 1: ', $part1, "\n";
+	echo 'Part 1 ', json_encode($part1), ': ', $part1[1] * ($part1[3]), "\n";
 
 	function getOptions($input, $current, $maxRange = 3) {
 		$options = [];
