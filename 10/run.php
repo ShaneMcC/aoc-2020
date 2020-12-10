@@ -8,19 +8,19 @@
 	$maxRange = 3;
 	$maxValue = max($input) + $maxRange;
 
-	function getPart1($input) {
+	function getPart1($input, $maxRange) {
 		$prev = $one = $three = 0;
 		foreach ($input as $i) {
 			if ($prev + 1 == $i) { $one++; }
 			else if ($prev + 3 == $i) { $three++; }
 			$prev = $i;
 		}
-		$three++; // Final Difference.
+		if ($maxRange == 3) { $three++; }
 
 		return $one * $three;
 	}
 
-	$part1 = getPart1($input);
+	$part1 = getPart1($input, $maxRange);
 	echo 'Part 1: ', $part1, "\n";
 
 	function getOptions($input, $current, $maxRange = 3) {
