@@ -4,7 +4,16 @@ cd "$(dirname "$0")"
 
 EXIT=0;
 
+ONLYDAY=""
+if [ "${1}" != "" ]; then
+	ONLYDAY="${1}"
+fi;
+
 for DAY in `seq 1 25`; do
+	if [ "${ONLYDAY}" != "" -a "${ONLYDAY}" != "${DAY}" ]; then
+		continue;
+	fi;
+
 	if [ -e ${DAY} ]; then
 		echo -n "Day ${DAY}:"
 		if [ -e ${DAY}/answers.txt -a $(cat ${DAY}/answers.txt 2>/dev/null | wc -l) -ne 0 ]; then
