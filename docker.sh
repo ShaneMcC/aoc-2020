@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASEIMAGE=shanemcc/aoc-2020-02
+BASEIMAGE=shanemcc/aoc-2020-03
 BASEDOCKERFILE="Dockerfile"
 
 IMAGE=${BASEIMAGE}
@@ -10,7 +10,7 @@ SHELL="0";
 
 while true; do
 	case "$1" in
-		--php74|--php8-jit)
+		--php74|--php8|--php8-jit)
 			IMAGE=${BASEIMAGE}-${1/--/}
 			DOCKERFILE=${BASEDOCKERFILE}-${1/--/}
 			;;
