@@ -1,1 +1,1 @@
-Dockerfile-php8-jit
+Dockerfile-php8
