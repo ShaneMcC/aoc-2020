@@ -52,3 +52,46 @@
 
 	$part1 = manhattan(0, 0, $x, $y);
 	echo 'Part 1: ', $part1, "\n";
+
+
+	$x = $y = 0;
+
+	$wX = 10;
+	$wY = -1;
+
+	$lastDir = 'E';
+	foreach ($entries as $e) {
+		$dir = $e['dir'];
+		$amount = $e['amount'];
+		$isWaypoint = true;
+
+		if ($dir == 'F') {
+			$x += $wX * $amount;
+			$y += $wY * $amount;
+			continue;
+		} else if ($dir == 'N' || $dir == 'S' || $dir == 'E' || $dir == 'W') {
+			$wX += $changes[$dir][0] * $amount;
+			$wY += $changes[$dir][1] * $amount;
+		} else if ($dir == 'L' || $dir == 'R') {
+			$amount = $amount / 90;
+			while ($amount > 0) {
+				$oldWX = $wX;
+				$oldWY = $wY;
+
+				$isLeft = ($dir == 'L');
+				if ($isLeft) {
+					$wX = $oldWY;
+					$wY = 0 - $oldWX;
+				} else {
+					$wX = 0 - $oldWY;
+					$wY = $oldWX;
+				}
+				$amount--;
+			}
+
+			continue;
+		}
+	}
+
+	$part2 = manhattan(0, 0, $x, $y);
+	echo 'Part 2: ', $part2, "\n";
