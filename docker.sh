@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "$0")"
+
 BASEIMAGE=shanemcc/aoc-2020-05
 BASEDOCKERFILE="Dockerfile"
 

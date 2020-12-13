@@ -15,15 +15,12 @@ for DAY in `seq 1 25`; do
 	if [ -e ${DAY} ]; then
 		echo "Day ${DAY}:"
 
-		echo -n '       php74: ';
-		./docker.sh --php74 --time ${DAY} | grep -i real;
-
-		echo -n '        php8: ';
-		./docker.sh --php8 --time ${DAY} | grep -i real;
-
-		echo -n '    php8-jit: ';
-		./docker.sh --php8-jit --time ${DAY} | grep -i real;
-
+		for DOCKERFILE in `ls docker/Dockerfile-*`; do
+			VERSION="${DOCKERFILE#*-}"
+			printf "%12s: " "${VERSION}"
+			# TODO: This doesn't check if it passes or fails, just how long it runs for...
+			./docker.sh --${VERSION} --time ${DAY} | grep -i real;
+		done;
 		echo ""
 	fi;
 done;
