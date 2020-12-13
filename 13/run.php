@@ -5,61 +5,54 @@
 
 	$timestamp = $input[0];
 
-	$busIDs = explode(',', $input[1]);
+	$busIDs = [];
+	foreach (explode(',', $input[1]) as $i => $b) {
+		if ($b != 'x') {
+			$busIDs[$i] = $b;
+		}
+	}
 
-	$min = $minID = 9999999;
+	function getEarliestBusTime($busIDs, $timestamp) {
+		for ($i = $timestamp; true; $i++) {
+			foreach ($busIDs as $b) {
+				if ($i % $b === 0) {
+					return $b * ($i - $timestamp);;
+				}
+			}
+		}
+	}
 
-	function getBusAt($busIDs, $testTime) {
-		$r = [];
-		foreach ($busIDs as $b) {
-			if ($b == 'x') { continue; }
-			if ($testTime % $b === 0) {
-				$r[] = $b;
+	$part1 = getEarliestBusTime($busIDs, $timestamp);
+	echo 'Part 1: ', $part1, "\n";
+
+	function hasSequentialBusses($busIDs, $val) {
+		$lastGood = [false, 0, 1];
+
+		foreach ($busIDs as $i => $b) {
+			if (($val + $i) % $b !== 0) {
+				return $lastGood;
+			} else {
+				$lastGood = [false, $i, $b];
 			}
 		}
 
-		return $r;
+		return [true];
 	}
-
-	$part1 = 0;
-	for ($i = $timestamp; true; $i++) {
-		$b = getBusAt($busIDs, $i);
-		if (!empty($b)) {
-			$part1 = $b[0] * ($i - $timestamp);
-			break;
-		}
-	}
-
-	echo 'Part 1: ', $part1, "\n";
 
 	$testTime = 0;
 	$lastValid = 1;
 	$lastValidID = -1;
 	while (true) {
-		if (isDebug()) {
-			echo '====', "\n";
-			echo $testTime, "\n";
-		}
-		$allTrue = true;
 		foreach ($busIDs as $k => $b) {
-			if ($b == 'x') { continue; }
-			$c = getBusAt($busIDs, $testTime + $k);
+			$c = hasSequentialBusses($busIDs, $testTime);
 
-			if (isDebug()) { echo "\t", ($testTime + $k), ' is ', json_encode($c), ' want ', $b, "\n"; }
-
-			if (!in_array($b, $c)) {
-				$allTrue = false;
-				break;
-			} else if ($lastValidID < $k) {
-				$lastValid *= $b;
-				$lastValidID = $k;
+			if ($c[0]) {
+				die('Part 2: ' . $testTime . "\n");
+			} else if ($lastValidID < $c[1]) {
+				$lastValid *= $c[2];
+				$lastValidID = $c[1];
 			}
 		}
 
-		if ($allTrue) {
-			die('Part 2: ' . $testTime . "\n");
-		}
-
-		if (isDebug()) { echo 'Adding: ', $lastValid, "\n"; }
 		$testTime += $lastValid;
 	}
