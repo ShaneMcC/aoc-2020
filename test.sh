@@ -9,6 +9,10 @@ if [ "${1}" != "" ]; then
 	ONLYDAY="${1}"
 fi;
 
+# Test if grep is sane...
+echo "" | grep -Pzl "" >/dev/null 2>&1
+CANGREP=${?}
+
 for DAY in `seq 1 25`; do
 	if [ "${ONLYDAY}" != "" -a "${ONLYDAY}" != "${DAY}" ]; then
 		continue;
@@ -24,7 +28,12 @@ for DAY in `seq 1 25`; do
 				PART2=$(cat ${DAY}/answers.txt | head -n 2 | tail -n 1)
 			fi;
 
-			RESULT=$(${DAY}/run.php 2>/dev/null | grep -Pzl "(?s).*${PART1}.*\n.*${PART2}.*")
+			REGEX="(?s).*${PART1}.*\n.*${PART2}.*"
+			if [ ${CANGREP} -eq 0 ]; then
+				RESULT=$(${DAY}/run.php 2>/dev/null | grep -Pzl "(?s)${REGEX}")
+			else
+				RESULT=$(${DAY}/run.php 2>/dev/null | php -r 'echo preg_match("#'"${REGEX}"'#im", file_get_contents("php://STDIN")) ? "Yes" : "";')
+			fi;
 
 			if [ "${RESULT}" = "" ]; then
 				echo -e "\033[1;31m" "Fail." "\033[0m";
