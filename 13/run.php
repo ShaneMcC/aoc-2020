@@ -26,13 +26,13 @@
 	echo 'Part 1: ', $part1, "\n";
 
 	function hasSequentialBusses($busIDs, $val) {
-		$lastGood = [false, 0, 1];
+		$incrementer = 1;
 
 		foreach ($busIDs as $i => $b) {
 			if (($val + $i) % $b !== 0) {
-				return $lastGood;
+				return [false, $incrementer];
 			} else {
-				$lastGood = [false, $i, $b];
+				$incrementer *= $b;
 			}
 		}
 
@@ -40,19 +40,14 @@
 	}
 
 	$testTime = 0;
-	$lastValid = 1;
-	$lastValidID = -1;
 	while (true) {
 		foreach ($busIDs as $k => $b) {
 			$c = hasSequentialBusses($busIDs, $testTime);
 
 			if ($c[0]) {
 				die('Part 2: ' . $testTime . "\n");
-			} else if ($lastValidID < $c[1]) {
-				$lastValid *= $c[2];
-				$lastValidID = $c[1];
+			} else {
+				$testTime += $c[1];
 			}
 		}
-
-		$testTime += $lastValid;
 	}
