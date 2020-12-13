@@ -39,15 +39,20 @@
 		return [true];
 	}
 
-	$testTime = 0;
-	while (true) {
-		foreach ($busIDs as $k => $b) {
-			$c = hasSequentialBusses($busIDs, $testTime);
+	function getEarliestSequentialTime($busIDs) {
+		$testTime = 0;
+		while (true) {
+			foreach ($busIDs as $k => $b) {
+				$c = hasSequentialBusses($busIDs, $testTime);
 
-			if ($c[0]) {
-				die('Part 2: ' . $testTime . "\n");
-			} else {
-				$testTime += $c[1];
+				if ($c[0]) {
+					return $testTime;
+				} else {
+					$testTime += $c[1];
+				}
 			}
 		}
 	}
+
+	$part2 = getEarliestSequentialTime($busIDs);
+	echo 'Part 2: ', $part2, "\n";
