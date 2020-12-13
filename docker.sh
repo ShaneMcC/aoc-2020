@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASEIMAGE=shanemcc/aoc-2020-04
+BASEIMAGE=shanemcc/aoc-2020-05
 BASEDOCKERFILE="Dockerfile"
 
 IMAGE=${BASEIMAGE}
