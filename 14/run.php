@@ -52,10 +52,10 @@
 		return $memory;
 	}
 
-	function getPossible($mem, $mask) {
-		$possibleMems = [$mem];
-		for ($i = 0; $i < strlen($mask); $i++) {
-			if ($mask[$i] == 'X') {
+	function getPossible($maskedMem) {
+		$possibleMems = [$maskedMem];
+		for ($i = 0; $i < strlen($maskedMem); $i++) {
+			if ($maskedMem[$i] == 'X') {
 				$newPossible = [];
 				foreach ($possibleMems as $p) {
 					$p[$i] = '0';
@@ -78,9 +78,9 @@
 			foreach ($section['mem'] as $mems) {
 				foreach ($mems as $mem => $val) {
 					$mem = getPaddedBin($mem);
-					$mem = maskValue($mem, $section['mask'], ['X', '0']);
+					$maskedMem = maskValue($mem, $section['mask'], ['0']);
 
-					foreach (getPossible($mem, $section['mask']) as $loc) {
+					foreach (getPossible($maskedMem) as $loc) {
 						$memory[bindec($loc)] = $val;
 					}
 				}
