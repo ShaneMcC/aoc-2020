@@ -3,7 +3,6 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
 
-	$memory = [];
 	$entries = [];
 	foreach ($input as $line) {
 		if (preg_match('#mask = (.*)#SADi', $line, $m)) {
@@ -19,64 +18,79 @@
 	}
 	if (!empty($section)) { $entries[] = $section; }
 
-
-	foreach ($entries as $section) {
-		foreach ($section['mem'] as $mem) {
-			foreach ($mem as $loc => $val) {
-				$val = decbin($val);
-				$val = str_repeat(0, 36 - strlen($val)) . $val;
-
-				for ($i = 0; $i < strlen($section['mask']); $i++) {
-					if ($section['mask'][$i] == 'X') { continue; }
-
-					$val[$i] = $section['mask'][$i];
-				}
-
-				$memory[$loc] = bindec($val);
-			}
-
-		}
+	function getPaddedBin($val, $len = 36) {
+		$val = decbin($val);
+		$val = str_repeat(0, 36 - strlen($val)) . $val;
+		return $val;
 	}
 
-	$part1 = array_sum($memory);
+	function maskValue($val, $mask, $ignore) {
+		for ($i = 0; $i < strlen($mask); $i++) {
+			if (in_array($mask[$i], $ignore)) { continue; }
+
+			$val[$i] = $mask[$i];
+		}
+
+		return $val;
+	}
+
+	function getMemoryWithMaskedValues($entries) {
+		$memory = [];
+
+		foreach ($entries as $section) {
+			foreach ($section['mem'] as $mem) {
+				foreach ($mem as $loc => $val) {
+					$val = getPaddedBin($val);
+					$val = maskValue($val, $section['mask'], ['X']);
+
+					$memory[$loc] = bindec($val);
+				}
+
+			}
+		}
+
+		return $memory;
+	}
+
+	function getPossible($mem, $mask) {
+		$possibleMems = [$mem];
+		for ($i = 0; $i < strlen($mask); $i++) {
+			if ($mask[$i] == 'X') {
+				$newPossible = [];
+				foreach ($possibleMems as $p) {
+					$p[$i] = '0';
+					$newPossible[] = $p;
+
+					$p[$i] = '1';
+					$newPossible[] = $p;
+				}
+
+				$possibleMems = $newPossible;
+			}
+		}
+
+		return $possibleMems;
+	}
+
+	function getMemoryWithMaskedMemory($entries) {
+		$memory = [];
+		foreach ($entries as $section) {
+			foreach ($section['mem'] as $mems) {
+				foreach ($mems as $mem => $val) {
+					$mem = getPaddedBin($mem);
+					$mem = maskValue($mem, $section['mask'], ['X', '0']);
+
+					foreach (getPossible($mem, $section['mask']) as $loc) {
+						$memory[bindec($loc)] = $val;
+					}
+				}
+			}
+		}
+		return $memory;
+	}
+
+	$part1 = array_sum(getMemoryWithMaskedValues($entries));
 	echo 'Part 1: ', $part1, "\n";
 
-
-	$memory = [];
-
-	foreach ($entries as $section) {
-		foreach ($section['mem'] as $mems) {
-			foreach ($mems as $mem => $val) {
-				$mem = decbin($mem);
-				$mem = str_repeat(0, 36 - strlen($mem)) . $mem;
-
-				for ($i = 0; $i < strlen($section['mask']); $i++) {
-					if ($section['mask'][$i] == '1') {
-						$mem[$i] = '1';
-					}
-				}
-
-				$possibleMems = [$mem];
-				for ($i = 0; $i < strlen($section['mask']); $i++) {
-					if ($section['mask'][$i] == 'X') {
-						$newPossible = [];
-						foreach ($possibleMems as $p) {
-							$p[$i] = '0';
-							$newPossible[] = $p;
-							$p[$i] = '1';
-							$newPossible[] = $p;
-						}
-
-						$possibleMems = $newPossible;
-					}
-				}
-
-				foreach ($possibleMems as $loc) {
-					$memory[bindec($loc)] = $val;
-				}
-			}
-		}
-	}
-
-	$part2 = array_sum($memory);
+	$part2 = array_sum(getMemoryWithMaskedMemory($entries));
 	echo 'Part 2: ', $part2, "\n";
