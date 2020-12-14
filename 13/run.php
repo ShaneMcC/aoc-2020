@@ -25,6 +25,22 @@
 	$part1 = getEarliestBusTime($busIDs, $timestamp);
 	echo 'Part 1: ', $part1, "\n";
 
+	// LCM and GCD from https://stackoverflow.com/questions/147515/least-common-multiple-for-3-or-more-numbers
+	function gcd($a, $b) {
+		$t = 0;
+		while ($b != 0){
+			$t = $b;
+			$b = $a % $b;
+			$a = $t;
+		}
+
+		return $a;
+	}
+
+	function lcm($a, $b) {
+		return ($a * $b / gcd($a, $b));
+	}
+
 	function hasSequentialBusses($busIDs, $val) {
 		$incrementer = 1;
 
@@ -32,7 +48,7 @@
 			if (($val + $i) % $b !== 0) {
 				return [false, $incrementer];
 			} else {
-				$incrementer *= $b;
+				$incrementer = lcm($incrementer, $b);
 			}
 		}
 
