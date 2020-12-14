@@ -66,6 +66,8 @@
 				}
 
 				$possibleMems = $newPossible;
+
+				if (count($possibleMems) > 1024) { die('Aborting due to excessive masking.' . "\n"); }
 			}
 		}
 
@@ -80,8 +82,24 @@
 					$mem = getPaddedBin($mem);
 					$maskedMem = maskValue($mem, $section['mask'], ['0']);
 
+					if (isDebug()) {
+						echo '====================', "\n";
+						echo sprintf('%25s', 'Memory Location: '), $mem, ' (', bindec($mem), ')', "\n";
+						echo sprintf('%25s', 'Mask: '), $section['mask'], "\n";
+						echo sprintf('%25s', 'Masked Memory: '), $maskedMem, "\n";
+						echo '==========', "\n";
+						echo sprintf('%25s', 'Write Value: '), $val, "\n";
+					}
+
+					$i = 1;
 					foreach (getPossible($maskedMem) as $loc) {
+						if (isDebug()) {
+							echo sprintf('%25s', 'Write Location #' . $i++ . ': '), $loc, ' (', bindec($loc), ')', "\n";
+						}
 						$memory[bindec($loc)] = $val;
+					}
+					if (isDebug()) {
+						echo '====================', "\n\n";
 					}
 				}
 			}
