@@ -21,7 +21,13 @@
 			$p1 = $spoken[$lastSpoken][0];
 			$p2 = $spoken[$lastSpoken][1];
 
-			if (isDebug()) { echo "\t", 'Previously spoken at ', $p1, ' and ', $p2, "\n"; }
+			if (isDebug()) {
+				if ($p1 == $p2) {
+					echo "\t", 'Previously only spoken at ', $p1, "\n";
+				} else {
+					echo "\t", 'Previously spoken at ', $p1, ' and ', $p2, "\n";
+				}
+			}
 			$num = abs($p1 - $p2);
 
 			if (!isset($spoken[$num])) {
