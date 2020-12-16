@@ -6,6 +6,7 @@
 	function getSpokenNumberAt($turn, $input) {
 		$spoken = [];
 		$num = 0;
+
 		foreach ($input as $i => $num) {
 			$spoken[$num] = ['spoken' => $i, 'diff' => 0];
 			if (isDebug()) { echo sprintf('Turn %6s', $i), "\n\t", 'Spoke starter number: ', $num, "\n"; }
@@ -16,7 +17,7 @@
 
 			if (isDebug()) {
 				echo sprintf('Turn %6s', $i), "\n";
-				echo "\t", 'Considering ', $num, ' previously spoken at ', $prev['spoken'], ($prev['diff'] != 0 ? ' and ' . ($prev['spoken'] - $prev['diff']) : ''), "\n";
+				echo "\t", 'Considering ', $num, ' previously spoken at ', $prev['spoken'], ($prev['diff'] > 0 ? ' and ' . ($prev['spoken'] - $prev['diff']) : ''), "\n";
 				echo "\t", 'Spoke number: ', $prev['diff'], "\n";
 			}
 

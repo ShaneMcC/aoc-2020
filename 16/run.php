@@ -18,12 +18,12 @@
 
 	$myTicket = explode(',', $input[1][1]);
 
-	$nearbyTickets = $input[2];
-	array_shift($nearbyTickets);
+	$nearbyTickets = [];
+	array_shift($input[2]);
+	foreach ($input[2] as $t) { $nearbyTickets[] = explode(',', $t); }
 
 	function getValidFields($fields, $values, $ignore = []) {
 		$valid = [];
-		if (!is_array($values)) { $values = [$values]; }
 
 		$debug = count($ignore) > 0;
 		$debug = false;
@@ -55,54 +55,55 @@
 		return $valid;
 	}
 
-	$validTickets = [$myTicket];
-	$invalidValues = [];
-	foreach ($nearbyTickets as $t) {
-		$values = explode(',', $t);
+	function getValidTickets($fields, $nearbyTickets) {
+		$invalidValues = [];
+		foreach ($nearbyTickets as $ticket) {
+			$isValidTicket = true;
 
-		$isValidTicket = true;
+			foreach ($ticket as $value) {
+				$valid = getValidFields($fields, [$value]);
 
-		foreach ($values as $value) {
-			$valid = getValidFields($fields, $value);
+				if (empty($valid)) {
+					$invalidValues[] = $value;
+					$isValidTicket = false;
+				}
+			}
 
-			if (empty($valid)) {
-				$invalidValues[] = $value;
-				$isValidTicket = false;
+			if ($isValidTicket) {
+				$validTickets[] = $ticket;
 			}
 		}
 
-		if ($isValidTicket) {
-			$validTickets[] = $values;
-		}
+		return [$validTickets, $invalidValues];
 	}
 
+	function calculateFieldNames($fields, $validTickets) {
+		$finalFields = array_fill(0, count($fields), FALSE);
+
+		$lastFields = [];
+		while (array_values($finalFields) != $lastFields) {
+			$lastFields = array_values($finalFields);
+
+			foreach ($finalFields as $i => $name) {
+				if ($name !== FALSE) { continue; }
+				$values = array_column($validTickets, $i);
+				$valid = getValidFields($fields, $values, array_values($finalFields));
+
+				if (count($valid) == 1) {
+					$finalFields[$i] = $valid[0];
+				}
+			}
+		}
+
+		return $finalFields;
+	}
+
+	[$validTickets, $invalidValues] = getValidTickets($fields, $nearbyTickets);
 	$part1 = array_sum($invalidValues);
 	echo 'Part 1: ', $part1, "\n";
 
-	$finalFields = array_fill(0, count($myTicket), FALSE);
-
-	$lastFields = [];
-
-	while (true) {
-		for ($i = 0; $i < count($finalFields); $i++) {
-			if ($finalFields[$i] !== FALSE) { continue; }
-			$values = array_column($validTickets, $i);
-
-			$valid = getValidFields($fields, $values, array_values($finalFields));
-
-			if (count($valid) == 1) {
-				$finalFields[$i] = $valid[0];
-			}
-		}
-
-		// Did we make any changes?
-		$thisFields = array_values($finalFields);
-		if ($lastFields == $thisFields) { break; }
-		$lastFields = $thisFields;
-	}
-
 	$part2 = 1;
-	foreach ($finalFields as $i => $f) {
+	foreach (calculateFieldNames($fields, $validTickets) as $i => $f) {
 		if (startsWith($f, 'departure')) {
 			$part2 *= $myTicket[$i];
 		}
