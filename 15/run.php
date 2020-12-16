@@ -4,16 +4,14 @@
 	$input = explode(',', getInputLine());
 
 	function getSpokenNumberAt($turn, $input) {
-		$i = 1;
 		$spoken = [];
 		$num = 0;
-		foreach ($input as $num) {
+		foreach ($input as $i => $num) {
 			$spoken[$num] = ['spoken' => $i, 'diff' => 0];
 			if (isDebug()) { echo sprintf('Turn %6s', $i), "\n\t", 'Spoke starter number: ', $num, "\n"; }
-			$i++;
 		}
 
-		while (true) {
+		for ($i = count($input); $i < $turn; $i++) {
 			$prev = $spoken[$num];
 
 			if (isDebug()) {
@@ -30,10 +28,9 @@
 				$spoken[$num]['diff'] = abs($spoken[$num]['spoken'] - $i);
 				$spoken[$num]['spoken'] = $i;
 			}
-
-			$i++;
-			if ($i > $turn) { return $num; }
 		}
+
+		return $num;
 	}
 
 	$part1 = getSpokenNumberAt(2020, $input);
