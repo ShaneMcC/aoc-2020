@@ -17,8 +17,7 @@
 			for ($z2 = $z - 1; $z2 <= $z + 1; $z2++) {
 				for ($y2 = $y - 1; $y2 <= $y + 1; $y2++) {
 					for ($x2 = $x - 1; $x2 <= $x + 1; $x2++) {
-						if (!$wantW && $x == $x2 && $y == $y2 && $z == $z2) { continue; }
-						if ($wantW && $x == $x2 && $y == $y2 && $z == $z2 && $w == $w2) { continue; }
+						if ($x == $x2 && $y == $y2 && $z == $z2 && (!$wantW || $w == $w2)) { continue; }
 
 						$n = [$x2, $y2, $z2];
 						if ($wantW) { $n[] = $w2; }
