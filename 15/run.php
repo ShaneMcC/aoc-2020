@@ -3,6 +3,15 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = explode(',', getInputLine());
 
+	class SpokenData {
+		public $spoken = 0;
+		public $diff = 0;
+
+		public function __construct($i) {
+			$this->spoken = $i;
+		}
+	}
+
 	function getSpokenNumberAt($turn, $input) {
 		$spoken = [];
 		$num = 0;
@@ -10,7 +19,7 @@
 		$isDebug = isDebug();
 
 		foreach ($input as $i => $num) {
-			$spoken[$num] = ['spoken' => $i, 'diff' => 0];
+			$spoken[$num] = new SpokenData($i);
 			if ($isDebug) { echo sprintf('Turn %6s', $i), "\n\t", 'Spoke starter number: ', $num, "\n"; }
 		}
 
@@ -19,20 +28,19 @@
 				$prev = $spoken[$num];
 
 				echo sprintf('Turn %6s', $i), "\n";
-				echo "\t", 'Considering ', $num, ' previously spoken at ', $prev['spoken'], ($prev['diff'] > 0 ? ' and ' . ($prev['spoken'] - $prev['diff']) : ''), "\n";
-				echo "\t", 'Spoke number: ', $prev['diff'], "\n";
+				echo "\t", 'Considering ', $num, ' previously spoken at ', $prev->spoken, ($prev->diff > 0 ? ' and ' . ($prev->spoken - $prev->diff) : ''), "\n";
+				echo "\t", 'Spoke number: ', $prev->diff, "\n";
 
-				$num = $prev['diff'];
+				$num = $prev->diff;
 			} else {
-				$num = $spoken[$num]['diff'];
+				$num = $spoken[$num]->diff;
 			}
 
-
 			if (!isset($spoken[$num])) {
-				$spoken[$num] = ['spoken' => $i, 'diff' => 0];
+				$spoken[$num] = new SpokenData($i);
 			} else {
-				$spoken[$num]['diff'] = abs($spoken[$num]['spoken'] - $i);
-				$spoken[$num]['spoken'] = $i;
+				$spoken[$num]->diff = abs($spoken[$num]->spoken - $i);
+				$spoken[$num]->spoken = $i;
 			}
 		}
 
