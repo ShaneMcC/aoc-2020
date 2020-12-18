@@ -4,40 +4,35 @@
 	$input = getInputLines();
 
 	function parseExpression($line, $precedence = ['+*']) {
-		$val = 0;
 		$line = str_replace('(', ' ( ', str_replace(')', ' ) ', $line));
-		$bits = explode(' ', $line);
 
 		$bracketCount = 0;
-		$operator = '+';
 		$bracketed = [];
 
-		$expression = [0];
+		$expression = ['0'];
+		$operator = '+';
 
-		foreach ($bits as $v) {
+		foreach (explode(' ', $line) as $v) {
 			if (empty($v)) { continue; }
-			if ($v == '(') {
-				$bracketCount++;
-				if ($bracketCount == 1) {
-					$bracketed = [];
-				} else {
-					$bracketed[] = $v;
-				}
-			} else if ($v == ')') {
+
+			if ($v == ')') {
 				$bracketCount--;
+				$bracketed[] = $v;
 				if ($bracketCount == 0) {
-					$v = parseExpression(implode(' ', $bracketed), $precedence);
-				} else {
-					$bracketed[] = $v;
+					$bracketedExpression = implode(' ', array_splice($bracketed, 1, count($bracketed) - 1));
+					$bracketed = [];
+
+					$expression[] = $operator;
+					$expression[] = parseExpression($bracketedExpression, $precedence);
 				}
+			} else if ($v == '(') {
+				$bracketCount++;
+				$bracketed[] = $v;
 			} else if ($bracketCount > 0) {
 				$bracketed[] = $v;
-				continue;
 			} else if (!is_numeric($v)) {
 				$operator = $v;
-			}
-
-			if (is_numeric($v)) {
+			} else {
 				$expression[] = $operator;
 				$expression[] = $v;
 			}
@@ -64,7 +59,6 @@
 
 		return $expression;
 	}
-
 
 	$entries = [];
 	foreach ($input as $line) {
