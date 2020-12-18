@@ -37,9 +37,10 @@
 		$expression = preg_replace('#\s+#', ' ', '0 + ' . $expression);
 
 		foreach ($precedence as $p) {
+			$pq = preg_quote($p);
 			do {
 				$changed = false;
-				$expression = preg_replace_callback('/([0-9]+) ([' . preg_quote($p) . ']) ([0-9]+)/', function ($m) use (&$changed) {
+				$expression = preg_replace_callback('/([0-9]+) ([' . $pq . ']) ([0-9]+)/', function ($m) use (&$changed) {
 					$changed = true;
 					switch ($m[2]) {
 						case '+':
