@@ -34,13 +34,13 @@
 			}, $expression);
 		} while ($changed);
 
-		$expression = preg_replace('#\s+#', ' ', '0 + ' . $expression);
+		$expression = '0 + ' . $expression;
 
 		foreach ($precedence as $p) {
 			$pq = preg_quote($p);
 			do {
 				$changed = false;
-				$expression = preg_replace_callback('/([0-9]+) ([' . $pq . ']) ([0-9]+)/', function ($m) use (&$changed) {
+				$expression = preg_replace_callback('/([0-9]+)\s+([' . $pq . '])\s+([0-9]+)/', function ($m) use (&$changed) {
 					$changed = true;
 					switch ($m[2]) {
 						case '+':
@@ -55,13 +55,12 @@
 		return $expression;
 	}
 
-	$entries = [];
+	$part1 = 0;
+	$part2 = 0;
 	foreach ($input as $line) {
-		$entries[] = [$line, parseExpression($line, ['+*']), parseExpression($line, ['+', '*'])];
+		$part1 += parseExpression($line, ['+*']);
+		$part2 += parseExpression($line, ['+', '*']);
 	}
 
-	$part1 = array_sum(array_column($entries, 1));
 	echo 'Part 1: ', $part1, "\n";
-
-	$part2 = array_sum(array_column($entries, 2));
 	echo 'Part 2: ', $part2, "\n";
