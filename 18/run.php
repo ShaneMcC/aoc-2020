@@ -1,58 +1,52 @@
 #!/usr/bin/php
 <?php
 	require_once(dirname(__FILE__) . '/../common/common.php');
+
+	if (isTest()) {
+		$test = [];
+		$test[] = ['1 + 2 * 3 + 4 * 5 + 6', 71, 231];
+		$test[] = ['1 + (2 * 3) + (4 * (5 + 6))', 51, 51];
+		$test[] = ['2 * 3 + (4 * 5)', 26, 46];
+		$test[] = ['5 + (8 * 3 + 9 + 3 * 4 * 3)', 437, 1445];
+		$test[] = ['5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))', 12240, 669060];
+		$test[] = ['((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2', 13632, 23340];
+
+		foreach ($test as $t) {
+			echo 'Expression: ', $t[0], "\n";
+
+			$p1 = parseExpression($t[0], ['+*']);
+			echo "\t", 'Part 1: ', $p1, ' wanted ', $t[1], ' - ', ($t[1] == $p1 ? 'YES' : 'NO'), "\n";
+
+			$p2 = parseExpression($t[0], ['+', '*']);
+			echo "\t", 'Part 2: ', $p2, ' wanted ', $t[2], ' - ', ($t[2] == $p2 ? 'YES' : 'NO'), "\n";
+		}
+		die();
+	}
+
 	$input = getInputLines();
 
-	function parseExpression($line, $precedence = ['+*']) {
-		$line = str_replace('(', ' ( ', str_replace(')', ' ) ', $line));
+	function parseExpression($expression, $precedence = ['+*']) {
+		do {
+			$changed = false;
+			$expression = preg_replace_callback('/\(([^()]+)\)/', function ($m) use (&$changed, $precedence) {
+				$changed = true;
+				return parseExpression($m[1], $precedence);
+			}, $expression);
+		} while ($changed);
 
-		$bracketCount = 0;
-		$bracketed = [];
+		$expression = preg_replace('#\s+#', ' ', '0 + ' . $expression);
 
-		$expression = ['0'];
-		$operator = '+';
-
-		foreach (explode(' ', $line) as $v) {
-			if (empty($v)) { continue; }
-
-			if ($v == ')') {
-				$bracketCount--;
-				$bracketed[] = $v;
-				if ($bracketCount == 0) {
-					$bracketedExpression = implode(' ', array_splice($bracketed, 1, count($bracketed) - 1));
-					$bracketed = [];
-
-					$expression[] = $operator;
-					$expression[] = parseExpression($bracketedExpression, $precedence);
-				}
-			} else if ($v == '(') {
-				$bracketCount++;
-				$bracketed[] = $v;
-			} else if ($bracketCount > 0) {
-				$bracketed[] = $v;
-			} else if (!is_numeric($v)) {
-				$operator = $v;
-			} else {
-				$expression[] = $operator;
-				$expression[] = $v;
-			}
-		}
-
-		$expression = implode(' ', $expression);
 		foreach ($precedence as $p) {
 			do {
 				$changed = false;
 				$expression = preg_replace_callback('/([0-9]+) ([' . preg_quote($p) . ']) ([0-9]+)/', function ($m) use (&$changed) {
+					$changed = true;
 					switch ($m[2]) {
 						case '+':
-							$changed = true;
 							return $m[1] + $m[3];
 						case '*':
-							$changed = true;
 							return $m[1] * $m[3];
 					}
-
-					die('Unable to handle expression.');
 				}, $expression, 1);
 			} while ($changed);
 		}
