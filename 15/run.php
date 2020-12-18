@@ -4,19 +4,19 @@
 	$input = explode(',', getInputLine());
 
 	class SpokenData {
-		public $spoken = 0;
-		public $diff = 0;
+		public $spoken;
+		public $diff;
 
-		public function __construct($i) {
-			$this->spoken = $i;
+		public function __construct($spoken, $diff = 0) {
+			$this->spoken = $spoken;
+			$this->diff = $diff;
 		}
 	}
 
 	function getSpokenNumberAt($turn, $input) {
-		$spoken = [];
-		$num = 0;
-
 		$isDebug = isDebug();
+
+		$spoken = [];
 
 		foreach ($input as $i => $num) {
 			$spoken[$num] = new SpokenData($i);
