@@ -3,20 +3,21 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLineGroups();
 
-	function buildDefinitions($ruleStrings, $overrides = []) {
-		$definitions = '(?(DEFINE)';
+	function buildRegex($ruleStrings, $overrides = []) {
+		$definitions = [];
 
 		foreach ($ruleStrings as $ruleString) {
-			[$ruleId, $ruleString] = explode(': ', $ruleString, 2);
+			[$ruleId, $ruleData] = explode(': ', $ruleString, 2);
 
-			$definitions .= '(?<r' . $ruleId . '>';
+			$definition = "\n\t" . '# ' . $ruleString . "\n";
+			$definition .= "\t" . '(?<r' . $ruleId . '>';
 
 			if (isset($overrides[$ruleId])) {
-				$definitions .= $overrides[$ruleId];
+				$definition .= $overrides[$ruleId];
 			} else {
 				$options = [];
 
-				foreach (explode(' | ', $ruleString) as $rulebit) {
+				foreach (explode(' | ', $ruleData) as $rulebit) {
 					if (preg_match('#"(.*)"#', $rulebit, $m)) {
 						$options[] = $m[1];
 					} else {
@@ -24,15 +25,25 @@
 					}
 				}
 
-				$definitions .= '(' . implode('|', $options) . ')';
+				$definition .= '(' . implode('|', $options) . ')';
 			}
 
-			$definitions .= ')'."\n";
+			$definition .= ')';
+
+
+			$definitions[$ruleId] = $definition;
 		}
+		ksort($definitions);
 
-		$definitions .= ')';
+		$regex = '/';
+		$regex .= '(?(DEFINE)';
+		foreach ($definitions as $definition) { $regex .= $definition . "\n"; }
+		$regex .= ')' . "\n\n";
+		$regex .= '# Match rule 0.' . "\n";
+		$regex .= '^(?&r0)$' . "\n";
+		$regex .= '/x';
 
-		return $definitions;
+		return $regex;
 	}
 
 	$overrides = [];
@@ -61,5 +72,18 @@
 		return $count;
 	}
 
-	echo 'Part 1: ', countMatches($input[1], '#' . buildDefinitions($input[0]) . '^(?&r0)$#'), "\n";
-	echo 'Part 2: ', countMatches($input[1], '#' . buildDefinitions($input[0], $overrides) . '^(?&r0)$#'), "\n";
+	if (isDebug()) {
+		echo '========================================', "\n";
+		echo 'Part 1 Regex', "\n";
+		echo '========================================', "\n";
+		echo buildRegex($input[0]);
+		echo '========================================', "\n";
+
+		echo '========================================', "\n";
+		echo 'Part 2 Regex', "\n";
+		echo '========================================', "\n";
+		echo buildRegex($input[0], $overrides);
+		echo '========================================', "\n";
+	}
+	echo 'Part 1: ', countMatches($input[1], buildRegex($input[0])), "\n";
+	echo 'Part 2: ', countMatches($input[1], buildRegex($input[0], $overrides)), "\n";
