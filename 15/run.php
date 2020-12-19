@@ -1,5 +1,9 @@
 #!/usr/bin/php
 <?php
+    $__CLI['long'] = ['max:'];
+    $__CLI['extrahelp'] = [];
+    $__CLI['extrahelp'][] = '      --max <#>            Only run once, stop at <#>';
+
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = explode(',', getInputLine());
 
@@ -20,15 +24,15 @@
 
 		foreach ($input as $i => $num) {
 			$spoken[$num] = new SpokenData($i);
-			if ($isDebug) { echo sprintf('Turn %6s', $i), "\n\t", 'Spoke starter number: ', $num, "\n"; }
+			if ($isDebug) { echo sprintf('Turn %6s', ($i + 1)), "\n\t", 'Spoke starter number: ', $num, "\n"; }
 		}
 
 		for ($i = count($input); $i < $turn; $i++) {
 			if ($isDebug) {
 				$prev = $spoken[$num];
 
-				echo sprintf('Turn %6s', $i), "\n";
-				echo "\t", 'Considering ', $num, ' previously spoken at ', $prev->spoken, ($prev->diff > 0 ? ' and ' . ($prev->spoken - $prev->diff) : ''), "\n";
+				echo sprintf('Turn %6s', ($i + 1)), "\n";
+				echo "\t", 'Considering ', $num, ' previously spoken at ', ($prev->spoken + 1), ($prev->diff > 0 ? ' and ' . (($prev->spoken - $prev->diff) + 1) : ''), "\n";
 				echo "\t", 'Spoke number: ', $prev->diff, "\n";
 
 				$num = $prev->diff;
@@ -45,6 +49,13 @@
 		}
 
 		return $num;
+	}
+
+	if (isset($__CLIOPTS['max']) && is_numeric($__CLIOPTS['max'])) {
+		$num = $__CLIOPTS['max'];
+		$ans = getSpokenNumberAt($num, $input);
+		echo 'Answer at ' . $num . ': ', $ans, "\n";
+		die();
 	}
 
 	$part1 = getSpokenNumberAt(2020, $input);
