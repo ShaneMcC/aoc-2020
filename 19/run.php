@@ -3,79 +3,63 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLineGroups();
 
-	$rules = [];
+	function buildDefinitions($ruleStrings, $overrides = []) {
+		$definitions = '(?(DEFINE)';
 
-	function createRule($ruleString) {
-		$bits = explode(': ', $ruleString, 2);
+		foreach ($ruleStrings as $ruleString) {
+			[$ruleId, $ruleString] = explode(': ', $ruleString, 2);
 
-		$rule = ['str' => $bits[1], 'rules' => []];
-		foreach (explode(' | ', $bits[1]) as $rulebit) {
-			$rule['rules'][] = trim($rulebit);
-		}
+			$definitions .= '(?<r' . $ruleId . '>';
 
-		return [$bits[0], $rule];
-	}
-
-	foreach ($input[0] as $rule) {
-		[$rid, $r] = createRule($rule);
-		$rules[$rid] = $r;
-	}
-
-	function buildRegex($rules, $ruleId, $overrides = []) {
-		if (isset($overrides[$ruleId])) {
-			return $overrides[$ruleId];
-		}
-
-		$ruleinfo = $rules[$ruleId]['rules'];
-
-		$options = [];
-		foreach ($ruleinfo as $rule) {
-			if (preg_match('#"(.*)"#', $rule, $m)) {
-				$options[] = $m[1];
+			if (isset($overrides[$ruleId])) {
+				$definitions .= $overrides[$ruleId];
 			} else {
-				$ruleOptions = [];
-				foreach (explode(' ', $rule) as $rid) {
-					$ruleOptions[] = buildRegex($rules, $rid, $overrides);
+				$options = [];
+
+				foreach (explode(' | ', $ruleString) as $rulebit) {
+					if (preg_match('#"(.*)"#', $rulebit, $m)) {
+						$options[] = $m[1];
+					} else {
+						$options[] = '(?&r' . implode(')(?&r', explode(' ', $rulebit)) . ')';
+					}
 				}
-				$options[] = (count($ruleOptions) == 1) ? $ruleOptions[0] : implode($ruleOptions);
+
+				$definitions .= '(' . implode('|', $options) . ')';
 			}
+
+			$definitions .= ')'."\n";
 		}
 
-		return (count($options) == 1) ? $options[0] : '(' . implode('|', $options) . ')';
-	}
+		$definitions .= ')';
 
-	$part1regex = '#^' . buildRegex($rules, 0) . '$#';
-
-	$part1 = 0;
-	foreach ($input[1] as $message) {
-		if (preg_match($part1regex, $message)) {
-			$part1++;
-		}
+		return $definitions;
 	}
-	echo 'Part 1: ', $part1, "\n";
 
 	$overrides = [];
+
+	// 8: 42 | 42 8
+	$overrides[8] = '(?&r42)+';
+
+	// 11: 42 31 | 42 11 31
 	$maxLen = 0;
 	foreach ($input[1] as $message) { $maxLen = max($maxLen, strlen($message)); }
 
-	// $rules[8] = createRule('8: 42 | 42 8')[1];
-	$overrides[8] = '(' . buildRegex($rules, 42) . ')+';
-
-	// $rules[11] = createRule('11: 42 31 | 42 11 31')[1];
 	$overrides[11] = [];
-	$def = '(?(DEFINE)(?<r42>' . buildRegex($rules, 42) . ')(?<r31>' . buildRegex($rules, 31) . '))';
 	for ($i = 1; $i < ($maxLen / 2); $i++) {
-		$repeat = '{' . $i . '}';
-		$overrides[11][] = '(?&r42)' . $repeat . '(?&r31)' . $repeat;
+		$overrides[11][] = '(?&r42){' . $i . '}(?&r31){' . $i . '}';
 	}
-	$overrides[11] = $def . '(' . implode('|', $overrides[11]) . ')';
+	$overrides[11] = '(' . implode('|', $overrides[11]) . ')';
 
-	$part2regex = '#^' . buildRegex($rules, 0, $overrides) . '$#';
-
-	$part2 = 0;
-	foreach ($input[1] as $message) {
-		if (preg_match($part2regex, $message)) {
-			$part2++;
+	function countMatches($input, $regex) {
+		$count = 0;
+		foreach ($input as $message) {
+			if (preg_match($regex, $message)) {
+				$count++;
+			}
 		}
+
+		return $count;
 	}
-	echo 'Part 2: ', $part2, "\n";
+
+	echo 'Part 1: ', countMatches($input[1], '#' . buildDefinitions($input[0]) . '^(?&r0)$#'), "\n";
+	echo 'Part 2: ', countMatches($input[1], '#' . buildDefinitions($input[0], $overrides) . '^(?&r0)$#'), "\n";
