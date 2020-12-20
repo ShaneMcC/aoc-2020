@@ -326,6 +326,6 @@
 		$fsm = findSeaMonsters($pmap);
 
 		if ($fsm[0] > 0) {
-			echo 'Part 2: ', $fsm[1], "\n";
+			echo 'Part 2: Found ', $fsm[0], ' Sea Monsters - Roughness: ', $fsm[1], "\n";
 		}
 	}
