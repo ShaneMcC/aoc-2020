@@ -6,7 +6,6 @@
 	$tiles = [];
 	foreach ($input as $in) {
 		$name = array_shift($in);
-		echo $name, "\n";
 		if (preg_match('#([0-9]+)#', $name, $m)) {
 			$map = [];
 			foreach ($in as $i) { $map[] = str_split($i); }
@@ -88,35 +87,38 @@
 	}
 
 	$part1 = 1;
-
-	$corners = [];
+	$cornerTiles = [];
+	$edgeTiles = [];
+	$middleTiles = [];
 	foreach ($tiles as $tid => $tile) {
 		// echo 'TID: ', $tid, "\n";
-		foreach ($tile as $oid => $orientation) {
-			$edges = findEdges($orientation);
+		$edges = findEdges($tile[0]);
 
-			$matches = 0;
-			foreach ($tiles as $tid2 => $tile2) {
-				if ($tid2 == $tid) { continue; }
+		$matches = 0;
+		foreach ($tiles as $tid2 => $tile2) {
+			if ($tid2 == $tid) { continue; }
 
-				foreach ($tile2 as $oid2 => $orientation2) {
-					$edges2 = findEdges($orientation2);
-					foreach ($edges as $edge) {
-						if (in_array($edge, $edges2)) {
-							$matches++;
-						}
+			foreach ($tile2 as $oid2 => $orientation2) {
+				$edges2 = findEdges($orientation2);
+				foreach ($edges as $edge) {
+					if (in_array($edge, $edges2)) {
+						$matches++;
 					}
 				}
 			}
+		}
 
-			// echo "\t", $matches, "\n";
-
-			// Corners are 8, obviously.
-			if ($matches == 8) {
-				$corners[] = $tid;
-				break;
-			}
+		// Divide by 4, for some reason. Who knows.
+		if ($matches / 4 == 2) {
+			// echo 'Corner', "\n";
+			$cornerTiles[] = $tid;
+		} else if ($matches / 4 == 3) {
+			// echo 'Edge', "\n";
+			$edgeTiles[] = $tid;
+		} else if ($matches / 4 == 4) {
+			// echo 'Middle', "\n";
+			$middleTiles[] = $tid;
 		}
 	}
 
-	echo 'Part 1: ', array_product($corners), "\n";
+	echo 'Part 1: ', array_product($cornerTiles), "\n";
