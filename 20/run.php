@@ -320,6 +320,12 @@
 	echo 'Part 1: ', array_product($cornerTiles), "\n";
 
 	$grid = findValidGrid($tiles, $cornerTiles[0]);
+
+	if (isDebug()) {
+		echo 'Found grid: ', "\n";
+		showGrid($grid);
+	}
+
 	$map = createMap($tiles, $grid);
 
 	foreach (getPossibilities($map) as $pmap) {
