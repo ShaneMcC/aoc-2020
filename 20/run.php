@@ -37,9 +37,10 @@
 		$possibilities = [];
 
 		for ($i = 0; $i < 4; $i++) {
+			$r = (90 * $i);
 			$rb = rotateBlock($block, $i);
-			$possibilities[] = blockToString($rb);
-			$possibilities[] = blockToString(flipBlock($rb));
+			$possibilities[$r] = blockToString($rb);
+			$possibilities[$r . 'f'] = blockToString(flipBlock($rb));
 		}
 
 		$result = [];
