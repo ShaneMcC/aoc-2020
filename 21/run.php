@@ -44,8 +44,6 @@
 				if (count($inAll) == 1) {
 					$allergens[$a] = $inAll[0];
 					$possibleAllergens[$a] = FALSE;
-
-					// echo 'Found that ', $a, ' is ', $inAll[0], "\n";
 				}
 			}
 		}
@@ -59,5 +57,7 @@
 	}
 	echo 'Part 1: ', $part1, "\n";
 
-	// $part2 = -1;
-	// echo 'Part 2: ', $part2, "\n";
+	ksort($allergens);
+	$part2 = implode(',', array_values($allergens));
+
+	echo 'Part 2: ', $part2, "\n";
