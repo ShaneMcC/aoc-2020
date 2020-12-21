@@ -319,11 +319,11 @@
 	$map = new TileInfo(createMap($tiles, $grid));
 	$monster = getSeaMonster();
 
-	foreach ($map->orientations as $pmap) {
+	foreach ($map->orientations as $oid => $pmap) {
 		$fsm = findSeaMonsters($pmap->block, $monster);
 
 		if ($fsm[0] > 0) {
-			echo 'Part 2: Found ', $fsm[0], ' Sea Monsters - Roughness: ', $fsm[1], "\n";
+			echo 'Part 2: Found ', $fsm[0], ' Sea Monsters at ', $oid, ' - Roughness: ', $fsm[1], "\n";
 			break;
 		}
 	}
