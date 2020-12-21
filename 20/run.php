@@ -11,59 +11,49 @@
 			$map = [];
 			foreach ($in as $i) { $map[] = str_split($i); }
 
-			$tiles[$m[1]]['versions'] = getPossibilities($map);
+			$tiles[$m[1]]['orientations'] = getOrientations($map);
 			$tiles[$m[1]]['neighbours'] = [];
 		}
 	}
 
 	// Figure out tile neighbours.
 	foreach (array_keys($tiles) as $tid) {
-		$tile = $tiles[$tid]['versions'][0];
+		$tile = $tiles[$tid]['orientations'][0];
 
-		$neighbours = [];
+		$edges = getEdges($tile);
 
-		$edges = findEdges($tile);
-
-		$neighbours = array_merge($neighbours, findTiles($tiles, $edges['N'], [$tid]));
-		$neighbours = array_merge($neighbours, findTiles($tiles, $edges['E'], [$tid]));
-		$neighbours = array_merge($neighbours, findTiles($tiles, $edges['S'], [$tid]));
-		$neighbours = array_merge($neighbours, findTiles($tiles, $edges['W'], [$tid]));
-
-		$tiles[$tid]['neighbours'] = $neighbours;
+		foreach ($edges as $edge) {
+			$n = findTileWithEdge($tiles, $edge, $tid);
+			if ($n !== FALSE) {
+				$tiles[$tid]['neighbours'][] = $n;
+			}
+		}
 	}
 
-	function getPossibilities($block) {
-		// Find all possibilities for this block.
-		$possibilities = [];
+	// Find all possibilities for this block.
+	function getOrientations($block) {
+		$result = [];
 
 		for ($i = 0; $i < 4; $i++) {
 			$r = (90 * $i);
-			$rb = rotateBlock($block, $i);
-			$possibilities[$r] = blockToString($rb);
-			$possibilities[$r . 'f'] = blockToString(flipBlock($rb));
-		}
-
-		$result = [];
-		foreach (array_unique($possibilities) as $p) {
-			$result[] = stringToBlock($p);
+			$result[$r] = $block;
+			$result[$r . 'f'] = flipBlock($block);
+			$block = rotateBlock($block);
 		}
 
 		return $result;
 	}
 
-	function rotateBlock($block, $times = 1) {
+	function rotateBlock($block) {
 		$rotate = $block;
 
-		for ($t = 0; $t < $times; $t++) {
-			for ($i = 0; $i < count($block); $i++) {
-				for ($j = 0; $j < count($block[$i]); $j++) {
-					$i2 = $j;
-					$j2 = count($block[$i]) - 1 - $i;
+		for ($i = 0; $i < count($block); $i++) {
+			for ($j = 0; $j < count($block[$i]); $j++) {
+				$i2 = $j;
+				$j2 = count($block[$i]) - 1 - $i;
 
-					$rotate[$i2][$j2] = $block[$i][$j];
-				}
+				$rotate[$i2][$j2] = $block[$i][$j];
 			}
-			$block = $rotate;
 		}
 
 		return $rotate;
@@ -79,22 +69,7 @@
 		return $flip;
 	}
 
-	function blockToString($block) {
-		$rows = [];
-		foreach ($block as $row) { $rows[] = implode('', $row); }
-
-		return implode('/', $rows);
-	}
-
-	function stringToBlock($blockstring) {
-		$block = [];
-		$rows = explode('/', $blockstring);
-		foreach ($rows as $row) { $block[] = str_split($row); }
-
-		return $block;
-	}
-
-	function findEdges($tile) {
+	function getEdges($tile) {
 		$edges = [];
 		$edges['N'] = implode('', $tile[0]);
 		$edges['E'] = implode('', array_column($tile, count($tile[0]) - 1));
@@ -104,20 +79,20 @@
 		return $edges;
 	}
 
-	function findTiles($tiles, $edge, $ignore = []) {
+	function findTileWithEdge($tiles, $edge, $exclude = '') {
 		$r = [];
 		foreach ($tiles as $tid => $tile) {
-			if (in_array($tid, $ignore)) { continue; }
+			if ($tid == $exclude) { continue; }
 
-			foreach ($tile['versions'] as $oid => $orientation) {
-				$edges = findEdges($orientation);
+			foreach ($tile['orientations'] as $oid => $orientation) {
+				$edges = getEdges($orientation);
 				if (in_array($edge, $edges)) {
-					$r[] = $tid;
+					return $tid;
 				}
 			}
 		}
 
-		return array_unique($r);
+		return FALSE;
 	}
 
 	function getCornerTiles($tiles) {
@@ -133,12 +108,6 @@
 		return $cornerTiles;
 	}
 
-	function drawTile($tile) {
-		foreach ($tile as $row) {
-			echo implode('', $row), "\n";
-		}
-	}
-
 	function findGrid($tiles, $startTile) {
 		$size = sqrt(count($tiles));
 
@@ -149,44 +118,48 @@
 			}
 		}
 
-		// Add a corner, default orientation.
+		// Add our starting corner piece
 		$grid[0][0] = $startTile;
 
-		if (isDebug()) {
+		$isDebug = isDebug();
+
+		if ($isDebug) {
 			echo 'Looking at: 0, 0', "\n";
 			echo "\t", 'Matched Tile: ', implode(', ', $grid[0][0]), "\n";
 		}
 
 		// Now, fill in the rows....
+		// Top row we go left to right matching along the East/West border
+		// Then for every subsequent row, we look at the tile above us and go north/south
 		for ($y = 0; $y < $size; $y++) {
 			for ($x = 0; $x < $size; $x++) {
 				if ($grid[$y][$x] != NULL) { continue; } // Already populated.
 				// If we are on the first row, we are going left to right
 				// If we are on any other row, we are going top to bottom.
 				[$previousTileId, $prevOrientation] = ($y == 0) ? $grid[$y][$x - 1] : $grid[$y - 1][$x];
+				[$previousEdge, $ourEdge] = ($y == 0) ? ['E', 'W'] : ['S', 'N'];
 
-				$previousEdge = ($y == 0) ? 'E' : 'S';
-				$ourEdge = ($y == 0) ? 'W' : 'N';
-
-				if (isDebug()) {
+				if ($isDebug) {
 					echo 'Looking at: ', $y, ',', $x, "\n";
 					echo "\t", 'Previous Tile: ', $previousTileId, ', ', $prevOrientation, "\n";
 				}
 
-				if (!isset($tiles[$previousTileId]['versions'][$prevOrientation])) { return FALSE; }
-				$previousTile = $tiles[$previousTileId]['versions'][$prevOrientation];
+				if (!isset($tiles[$previousTileId]['orientations'][$prevOrientation])) { return FALSE; }
+				$previousTile = $tiles[$previousTileId]['orientations'][$prevOrientation];
 
-				$wantedEdge = findEdges($previousTile)[$previousEdge];
+				$wantedEdge = getEdges($previousTile)[$previousEdge];
 
-				if (isDebug()) {
+				if ($isDebug) {
 					echo "\t", 'Previous Edge: ', $previousEdge, ' => ', $wantedEdge, "\n";
 				}
 
+				// Look at all our neighbours
 				foreach ($tiles[$previousTileId]['neighbours'] as $nTileId) {
-					foreach ($tiles[$nTileId]['versions'] as $oid => $t) {
-						$e = findEdges($t);
+					// And check each orientation.
+					foreach ($tiles[$nTileId]['orientations'] as $oid => $t) {
+						$e = getEdges($t);
 
-						if (isDebug()) {
+						if ($isDebug) {
 							echo "\t\t", 'Testing Edge: ', $nTileId, ', ', $oid, ', ', $ourEdge, ' => ', $e[$ourEdge], "\n";
 						}
 
@@ -199,7 +172,7 @@
 
 				if ($grid[$y][$x] == null) { return FALSE; }
 
-				if (isDebug()) {
+				if ($isDebug) {
 					echo "\t", 'Matched Tile: ', implode(', ', $grid[$y][$x]), "\n";
 				}
 			}
@@ -222,7 +195,7 @@
 	function findValidGrid($tiles, $startTile) {
 		$grid = FALSE;
 
-		foreach (array_keys($tiles[$startTile]['versions']) as $oid) {
+		foreach (array_keys($tiles[$startTile]['orientations']) as $oid) {
 			$grid = findGrid($tiles, [$startTile, $oid]);
 			if ($grid != FALSE) { break; }
 		}
@@ -235,7 +208,7 @@
 
 		// Draw the grid...
 		[$t, $o] = $grid[0][0];
-		$tileSize = count($tiles[$t]['versions'][$o]);
+		$tileSize = count($tiles[$t]['orientations'][$o]);
 
 		$map = [];
 
@@ -248,9 +221,9 @@
 				for ($x = 0; $x < $size; $x++) {
 					[$t, $o] = $grid[$y][$x];
 
-					$row = array_splice($tiles[$t]['versions'][$o][$tY], 1, $tileSize - 2);
+					$row = array_splice($tiles[$t]['orientations'][$o][$tY], 1, $tileSize - 2);
 
-					$mapLine = array_merge($mapLine, $row);
+					$mapLine += array_merge($mapLine, $row);
 				}
 				$map[] = $mapLine;
 			}
@@ -259,39 +232,46 @@
 		return $map;
 	}
 
-	function findSeaMonsters($map) {
+	function getSeaMonster() {
 		$smCoords = [];
 		// Top Row
-		$smCoords[] = [18, -1];
-		// Our Row
-		$smCoords[] = [0, 0];
-		$smCoords[] = [5, 0];
-		$smCoords[] = [6, 0];
-		$smCoords[] = [11, 0];
-		$smCoords[] = [12, 0];
-		$smCoords[] = [17, 0];
 		$smCoords[] = [18, 0];
-		$smCoords[] = [19, 0];
+		// Our Row
+		$smCoords[] = [0, 1];
+		$smCoords[] = [5, 1];
+		$smCoords[] = [6, 1];
+		$smCoords[] = [11, 1];
+		$smCoords[] = [12, 1];
+		$smCoords[] = [17, 1];
+		$smCoords[] = [18, 1];
+		$smCoords[] = [19, 1];
 		// Bottom Row
-		$smCoords[] = [1, 1];
-		$smCoords[] = [4, 1];
-		$smCoords[] = [7, 1];
-		$smCoords[] = [10, 1];
-		$smCoords[] = [13, 1];
-		$smCoords[] = [16, 1];
+		$smCoords[] = [1, 2];
+		$smCoords[] = [4, 2];
+		$smCoords[] = [7, 2];
+		$smCoords[] = [10, 2];
+		$smCoords[] = [13, 2];
+		$smCoords[] = [16, 2];
 
+		return $smCoords;
+	}
+
+	function findSeaMonsters($map, $seamonster) {
 		$seaMonsters = 0;
 		$roughness = 0;
 
-		// We can skip top/bottom rows
-		for ($y = 1; $y < count($map) - 2; $y++) {
+		$smWidth = max(array_column($seamonster, 0));
+		$smHeight = max(array_column($seamonster, 1));
+
+		// We can skip bottom 2 rows because we start checking out
+		for ($y = 0; $y < count($map) - $smHeight; $y++) {
 			// We can skip if we are too near the far edge
-			for ($x = 0; $x < count($map) - 20; $x++) {
+			for ($x = 0; $x < count($map) - $smWidth; $x++) {
 
 				// Do we have a sea monster?
 				$isSeaMonster = true;
-				foreach ($smCoords as $smc) {
-					if ($map[$y + $smc[1]][$x + $smc[0]] != '#') {
+				foreach ($seamonster as $sm) {
+					if ($map[$y + $sm[1]][$x + $sm[0]] != '#') {
 						$isSeaMonster = false;
 						break;
 					}
@@ -301,8 +281,8 @@
 				// overlapping sea monsters later.
 				if ($isSeaMonster) {
 					$seaMonsters++;
-					foreach ($smCoords as $smc) {
-						$map[$y + $smc[1]][$x + $smc[0]] = 'O';
+					foreach ($seamonster as $sm) {
+						$map[$y + $sm[1]][$x + $sm[0]] = 'O';
 					}
 				}
 			}
@@ -318,9 +298,12 @@
 	}
 
 	$cornerTiles = getCornerTiles($tiles);
+	if (count($cornerTiles) != 4) { die('Unable to find 4 corners.'."\n"); }
+
 	echo 'Part 1: ', array_product($cornerTiles), "\n";
 
 	$grid = findValidGrid($tiles, $cornerTiles[0]);
+	if ($grid == FALSE) { die('Unable to find valid grid layout.'."\n"); }
 
 	if (isDebug()) {
 		echo 'Found grid: ', "\n";
@@ -328,11 +311,13 @@
 	}
 
 	$map = createMap($tiles, $grid);
+	$monster = getSeaMonster();
 
-	foreach (getPossibilities($map) as $pmap) {
-		$fsm = findSeaMonsters($pmap);
+	foreach (getOrientations($map) as $pmap) {
+		$fsm = findSeaMonsters($pmap, $monster);
 
 		if ($fsm[0] > 0) {
 			echo 'Part 2: Found ', $fsm[0], ' Sea Monsters - Roughness: ', $fsm[1], "\n";
+			break;
 		}
 	}
