@@ -161,8 +161,6 @@ To check that you've assembled the image correctly, multiply the IDs of the four
 
 Assemble the tiles into an image. What do you get if you multiply together the IDs of the four corner tiles?
 
-Your puzzle answer was 8272903687921.
-
 --- Part Two ---
 Now, you're ready to check the image for sea monsters.
 
