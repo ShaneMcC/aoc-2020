@@ -3,6 +3,62 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLineGroups();
 
+	class Tile {
+		public $block = [];
+		public $edges = [];
+
+		public function __construct($block) {
+			$this->block = $block;
+
+			$this->edges['N'] = implode('', $block[0]);
+			$this->edges['E'] = implode('', array_column($block, count($block[0]) - 1));
+			$this->edges['S'] = implode('', $block[count($block) - 1]);
+			$this->edges['W'] = implode('', array_column($block, 0));
+		}
+
+		public function rotate() {
+			$rotate = $this->block;
+
+			for ($i = 0; $i < count($rotate); $i++) {
+				$c = count($rotate[$i]);
+				for ($j = 0; $j < $c; $j++) {
+					$i2 = $j;
+					$j2 = $c - 1 - $i;
+
+					$rotate[$i2][$j2] = $this->block[$i][$j];
+				}
+			}
+
+			return new Tile($rotate);
+		}
+
+		public function flip() {
+			$flip = [];
+
+			for ($i = 0; $i < count($this->block); $i++) {
+				$flip[$i] = array_reverse($this->block[$i]);
+			}
+
+			return new Tile($flip);
+		}
+	}
+
+	class TileInfo {
+		public $orientations = [];
+		public $neighbours = [];
+
+		public function __construct($block) {
+			$tile = new Tile($block);
+
+			for ($i = 0; $i < 4; $i++) {
+				$r = (90 * $i);
+				$this->orientations[$r] = $tile;
+				$this->orientations[$r . 'f'] = $tile->flip();
+				$tile = $tile->rotate();
+			}
+		}
+	}
+
 	$tiles = [];
 	// Import Tiles and all their variations.
 	foreach ($input as $in) {
@@ -11,72 +67,18 @@
 			$map = [];
 			foreach ($in as $i) { $map[] = str_split($i); }
 
-			$tiles[$m[1]]['orientations'] = getOrientations($map);
-			$tiles[$m[1]]['neighbours'] = [];
+			$tiles[$m[1]] = new TileInfo($map);
 		}
 	}
 
 	// Figure out tile neighbours.
-	foreach (array_keys($tiles) as $tid) {
-		$tile = $tiles[$tid]['orientations'][0];
-
-		$edges = getEdges($tile);
-
-		foreach ($edges as $edge) {
+	foreach ($tiles as $tid => $tile) {
+		foreach ($tile->orientations[0]->edges as $edge) {
 			$n = findTileWithEdge($tiles, $edge, $tid);
 			if ($n !== FALSE) {
-				$tiles[$tid]['neighbours'][] = $n;
+				$tiles[$tid]->neighbours[] = $n;
 			}
 		}
-	}
-
-	// Find all possibilities for this block.
-	function getOrientations($block) {
-		$result = [];
-
-		for ($i = 0; $i < 4; $i++) {
-			$r = (90 * $i);
-			$result[$r] = $block;
-			$result[$r . 'f'] = flipBlock($block);
-			$block = rotateBlock($block);
-		}
-
-		return $result;
-	}
-
-	function rotateBlock($block) {
-		$rotate = $block;
-
-		for ($i = 0; $i < count($block); $i++) {
-			for ($j = 0; $j < count($block[$i]); $j++) {
-				$i2 = $j;
-				$j2 = count($block[$i]) - 1 - $i;
-
-				$rotate[$i2][$j2] = $block[$i][$j];
-			}
-		}
-
-		return $rotate;
-	}
-
-	function flipBlock($block) {
-		$flip = [];
-
-		for ($i = 0; $i < count($block); $i++) {
-			$flip[$i] = array_reverse($block[$i]);
-		}
-
-		return $flip;
-	}
-
-	function getEdges($tile) {
-		$edges = [];
-		$edges['N'] = implode('', $tile[0]);
-		$edges['E'] = implode('', array_column($tile, count($tile[0]) - 1));
-		$edges['S'] = implode('', $tile[count($tile) - 1]);
-		$edges['W'] = implode('', array_column($tile, 0));
-
-		return $edges;
 	}
 
 	function findTileWithEdge($tiles, $edge, $exclude = '') {
@@ -84,9 +86,8 @@
 		foreach ($tiles as $tid => $tile) {
 			if ($tid == $exclude) { continue; }
 
-			foreach ($tile['orientations'] as $oid => $orientation) {
-				$edges = getEdges($orientation);
-				if (in_array($edge, $edges)) {
+			foreach ($tile->orientations as $oid => $orientation) {
+				if (in_array($edge, $orientation->edges)) {
 					return $tid;
 				}
 			}
@@ -98,7 +99,7 @@
 	function getCornerTiles($tiles) {
 		$cornerTiles = [];
 		foreach ($tiles as $tid => $tile) {
-			$matches = count($tile['neighbours']);
+			$matches = count($tile->neighbours);
 
 			if ($matches == 2) {
 				$cornerTiles[] = $tid;
@@ -144,26 +145,24 @@
 					echo "\t", 'Previous Tile: ', $previousTileId, ', ', $prevOrientation, "\n";
 				}
 
-				if (!isset($tiles[$previousTileId]['orientations'][$prevOrientation])) { return FALSE; }
-				$previousTile = $tiles[$previousTileId]['orientations'][$prevOrientation];
+				if (!isset($tiles[$previousTileId]->orientations[$prevOrientation])) { return FALSE; }
+				$previousTile = $tiles[$previousTileId]->orientations[$prevOrientation];
 
-				$wantedEdge = getEdges($previousTile)[$previousEdge];
+				$wantedEdge = $previousTile->edges[$previousEdge];
 
 				if ($isDebug) {
 					echo "\t", 'Previous Edge: ', $previousEdge, ' => ', $wantedEdge, "\n";
 				}
 
 				// Look at all our neighbours
-				foreach ($tiles[$previousTileId]['neighbours'] as $nTileId) {
+				foreach ($tiles[$previousTileId]->neighbours as $nTileId) {
 					// And check each orientation.
-					foreach ($tiles[$nTileId]['orientations'] as $oid => $t) {
-						$e = getEdges($t);
-
+					foreach ($tiles[$nTileId]->orientations as $oid => $t) {
 						if ($isDebug) {
-							echo "\t\t", 'Testing Edge: ', $nTileId, ', ', $oid, ', ', $ourEdge, ' => ', $e[$ourEdge], "\n";
+							echo "\t\t", 'Testing Edge: ', $nTileId, ', ', $oid, ', ', $ourEdge, ' => ', $t->edges[$ourEdge], "\n";
 						}
 
-						if ($e[$ourEdge] == $wantedEdge) {
+						if ($t->edges[$ourEdge] == $wantedEdge) {
 							$grid[$y][$x] = [$nTileId, $oid];
 							break 2;
 						}
@@ -195,7 +194,7 @@
 	function findValidGrid($tiles, $startTile) {
 		$grid = FALSE;
 
-		foreach (array_keys($tiles[$startTile]['orientations']) as $oid) {
+		foreach (array_keys($tiles[$startTile]->orientations) as $oid) {
 			$grid = findGrid($tiles, [$startTile, $oid]);
 			if ($grid != FALSE) { break; }
 		}
@@ -208,7 +207,7 @@
 
 		// Draw the grid...
 		[$t, $o] = $grid[0][0];
-		$tileSize = count($tiles[$t]['orientations'][$o]);
+		$tileSize = count($tiles[$t]->orientations[$o]->block);
 
 		$map = [];
 
@@ -221,7 +220,7 @@
 				for ($x = 0; $x < $size; $x++) {
 					[$t, $o] = $grid[$y][$x];
 
-					$row = array_splice($tiles[$t]['orientations'][$o][$tY], 1, $tileSize - 2);
+					$row = array_splice($tiles[$t]->orientations[$o]->block[$tY], 1, $tileSize - 2);
 
 					$mapLine += array_merge($mapLine, $row);
 				}
@@ -310,11 +309,11 @@
 		showGrid($grid);
 	}
 
-	$map = createMap($tiles, $grid);
+	$map = new TileInfo(createMap($tiles, $grid));
 	$monster = getSeaMonster();
 
-	foreach (getOrientations($map) as $pmap) {
-		$fsm = findSeaMonsters($pmap, $monster);
+	foreach ($map->orientations as $pmap) {
+		$fsm = findSeaMonsters($pmap->block, $monster);
 
 		if ($fsm[0] > 0) {
 			echo 'Part 2: Found ', $fsm[0], ' Sea Monsters - Roughness: ', $fsm[1], "\n";
