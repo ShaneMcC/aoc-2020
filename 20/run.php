@@ -173,6 +173,8 @@
 
 				if ($isDebug) {
 					echo "\t", 'Matched Tile: ', implode(', ', $grid[$y][$x]), "\n";
+
+					showGrid($grid, "\t\t");
 				}
 			}
 		}
@@ -180,12 +182,17 @@
 		return $grid;
 	}
 
-	function showGrid($grid) {
+	function showGrid($grid, $prefix = '') {
 		if ($grid == FALSE) { echo '<NO GRID>'; return; }
 
 		for ($y = 0; $y < count($grid); $y++) {
-			for ($x = 0; $x < count($grid); $x++) {
-				echo ' [ ', implode(', ', $grid[$y][$x]), ' ] ';
+			echo $prefix;
+			for ($x = 0; $x < count($grid[$y]); $x++) {
+				if ($grid[$y][$x] !== NULL) {
+					echo ' [ ', $grid[$y][$x][0], ',', sprintf('%5s', $grid[$y][$x][1]), ' ] ';
+				} else {
+					echo ' [    NULL    ] ';
+				}
 			}
 			echo "\n";
 		}
@@ -306,7 +313,7 @@
 
 	if (isDebug()) {
 		echo 'Found grid: ', "\n";
-		showGrid($grid);
+		showGrid($grid, "\t");
 	}
 
 	$map = new TileInfo(createMap($tiles, $grid));
