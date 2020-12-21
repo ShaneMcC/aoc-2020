@@ -21,9 +21,14 @@
 		}
 	}
 
+	$isDebug = isDebug();
+
 	while (count($allergens) != count($possibleAllergens)) {
 		foreach (array_keys($possibleAllergens) as $a) {
 			if (is_array($possibleAllergens[$a])) {
+				if ($isDebug) {
+					echo 'Checking: ', $a, "\n";
+				}
 
 				$inAll = [];
 				foreach ($possibleAllergens[$a][0] as $i) {
@@ -44,6 +49,11 @@
 				if (count($inAll) == 1) {
 					$allergens[$a] = $inAll[0];
 					$possibleAllergens[$a] = FALSE;
+					if ($isDebug) {
+						echo "\t", 'Discovered: ', $a, ' is ', $allergens[$a], "\n";
+					}
+				} else if ($isDebug) {
+					echo "\t", 'One of: ', implode(', ', $inAll), "\n";
 				}
 			}
 		}
