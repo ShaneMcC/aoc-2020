@@ -8,7 +8,7 @@
 		$name = array_shift($group);
 		preg_match('#Player (.*):#SADi', $name, $m);
 		$name = $m[1];
-		$players[$name] = $group;
+		$players[$name] = array_map('intval', $group);
 	}
 
 	function calculateScore($deck) {
@@ -88,10 +88,11 @@
 
 			$enc = json_encode($game);
 			if (isset($previousGames[$enc])) {
+				$winningPlayer = array_keys($game)[0];
 				if ($isDebug) {
-					echo $prefix, 'Instant win for player 1.', "\n";
+					echo $prefix, 'Instant win for player ' . $winningPlayer . '.', "\n";
 				}
-				return [1, 0, $gameId];
+				return [$winningPlayer, 0, $gameId];
 			}
 			$previousGames[$enc] = true;
 
