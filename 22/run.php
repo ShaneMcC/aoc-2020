@@ -13,9 +13,8 @@
 
 	function calculateScore($deck) {
 		$score = 0;
-		for ($i = 1; $i <= count($deck); $i++) {
-			$v = (count($deck) - $i) + 1;
-			$score += ($v * $deck[$i - 1]);
+		for ($i = 0; $i < count($deck); $i++) {
+			$score += (count($deck) - $i) * $deck[$i];
 		}
 
 		return $score;
