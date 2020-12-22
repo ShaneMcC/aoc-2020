@@ -60,7 +60,7 @@
 		if ($isDebug) {
 			echo $prefix, 'The winner is player ' . $winner . '!', "\n";
 
-			echo $prefix, "\n\n", '== Post-game results ==', "\n";
+			echo "\n\n", $prefix, '== Post-game results ==', "\n";
 			foreach ($game as $pid => $deck) {
 				echo $prefix, 'Player ', $pid, '\'s deck: ', implode(', ', $deck), "\n";
 			}
