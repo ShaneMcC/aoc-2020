@@ -1,5 +1,9 @@
 #!/usr/bin/php
 <?php
+    $__CLI['long'] = ['players:'];
+    $__CLI['extrahelp'] = [];
+    $__CLI['extrahelp'][] = '      --players <#>        Reshuffle the deck for <#> players (https://www.reddit.com/r/adventofcode/comments/ki4jy3)';
+
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLineGroups();
 
@@ -106,6 +110,23 @@
 		}
 
 		return [$winner, calculateScore($game[$winner]), $gameId];
+	}
+
+	function redistributeCards($game, $playerCount) {
+		$players = array_fill(1, $playerCount, []);
+
+		$i = 0;
+		foreach ($game as $deck) {
+			foreach ($deck as $c) {
+				$players[($i++ % $playerCount) + 1][] = $c;
+			}
+		}
+
+		return $players;
+	}
+
+	if (isset($__CLIOPTS['players']) && is_numeric($__CLIOPTS['players'])) {
+		$players = redistributeCards($players, $__CLIOPTS['players']);
 	}
 
 	[$winner, $score] = combat($players, false);
