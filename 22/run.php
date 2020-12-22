@@ -130,7 +130,7 @@
 	}
 
 	[$winner, $score] = combat($players, false);
-	echo 'Part 1: ', $score, "\n";
+	echo 'Part 1 - Player ', $winner, ' won with: ', $score, "\n";
 
 	[$winner, $score] = combat($players, true);
-	echo 'Part 2: ', $score, "\n";
+	echo 'Part 2 - Player ', $winner, ' won with: ', $score, "\n";
