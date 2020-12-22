@@ -27,37 +27,47 @@
 
 		if ($isDebug) { echo $prefix, '=== Game ===', "\n"; }
 
-		while (!empty($game[1]) && !empty($game[2])) {
+		while (count($game) > 1) {
 			$round++;
 			if ($isDebug) {
 				echo "\n", $prefix, '-- Round ' . $round .' --', "\n";
-				echo $prefix, 'Player 1\'s deck: ', implode(', ', $game[1]), "\n";
-				echo $prefix, 'Player 2\'s deck: ', implode(', ', $game[2]), "\n";
+				foreach ($game as $pid => $deck) {
+					echo $prefix, 'Player ', $pid, '\'s deck: ', implode(', ', $deck), "\n";
+				}
 			}
 
-			$card = [1 => array_shift($game[1]), 2 => array_shift($game[2])];
-			[$winner, $loser] = ($card[1] > $card[2]) ? [1, 2] : [2, 1];
+			$card = [];
+			foreach ($game as $pid => $deck) { $card[$pid] = array_shift($game[$pid]); }
+			$winner = array_keys($card, max($card))[0];
 
 			if ($isDebug) {
-				echo $prefix, 'Player 1 plays: ', $card[1], "\n";
-				echo $prefix, 'Player 2 plays: ', $card[2], "\n";
+				foreach ($card as $pid => $c) {
+					echo $prefix, 'Player ', $pid, ' plays: ', $c, "\n";
+				}
 				echo $prefix, 'Player ' . $winner . ' wins the round!', "\n";
 			}
 
-			$game[$winner] = array_merge($game[$winner], [$card[$winner], $card[$loser]]);
+			$winnerCard = [$card[$winner]];
+			unset($card[$winner]);
+			$game[$winner] = array_merge($game[$winner], $winnerCard, $card);
+
+			foreach ($card as $pid => $c) {
+				if (empty($game[$pid])) { unset($game[$pid]); }
+			}
 		}
 
-		[$winner, $loser] = empty($game[1]) ? [2, 1] : [1, 2];
+		$winner = array_keys($game)[0];
 
 		if ($isDebug) {
 			echo $prefix, 'The winner is player ' . $winner . '!', "\n";
 
 			echo $prefix, "\n\n", '== Post-game results ==', "\n";
-			echo $prefix, 'Player 1\'s deck: ', implode(', ', $game[1]), "\n";
-			echo $prefix, 'Player 2\'s deck: ', implode(', ', $game[2]), "\n";
+			foreach ($game as $pid => $deck) {
+				echo $prefix, 'Player ', $pid, '\'s deck: ', implode(', ', $deck), "\n";
+			}
 		}
 
-		return [$winner, $loser, calculateScore($game[$winner])];
+		return [$winner, calculateScore($game[$winner])];
 	}
 
 	function recursiveCombat($game, $gameId = 1, $prefix = "\t") {
@@ -68,12 +78,13 @@
 
 		$previousGames = [];
 		$round = 0;
-		while (!empty($game[1]) && !empty($game[2])) {
+		while (count($game) > 1) {
 			$round++;
 			if ($isDebug) {
 				echo "\n", $prefix, '-- Round ' . $round .' (Game ' . $myGameId .') --', "\n";
-				echo $prefix, 'Player 1\'s deck: ', implode(', ', $game[1]), "\n";
-				echo $prefix, 'Player 2\'s deck: ', implode(', ', $game[2]), "\n";
+				foreach ($game as $pid => $deck) {
+					echo $prefix, 'Player ', $pid, '\'s deck: ', implode(', ', $deck), "\n";
+				}
 			}
 
 			$enc = json_encode($game);
@@ -81,55 +92,73 @@
 				if ($isDebug) {
 					echo $prefix, 'Instant win for player 1.', "\n";
 				}
-				return [1, 2, 0, $gameId];
+				return [1, 0, $gameId];
 			}
 			$previousGames[$enc] = true;
 
-			$card = [1 => array_shift($game[1]), 2 => array_shift($game[2])];
-
-			if ($isDebug) {
-				echo $prefix, 'Player 1 plays: ', $card[1], "\n";
-				echo $prefix, 'Player 2 plays: ', $card[2], "\n";
+			$card = [];
+			$canRecurse = true;
+			foreach ($game as $pid => $deck) {
+				$card[$pid] = array_shift($game[$pid]);
+				$canRecurse = $canRecurse && count($game[$pid]) >= $card[$pid];
 			}
 
-			if (count($game[1]) >= $card[1] && count($game[2]) >= $card[2]) {
+			if ($isDebug) {
+				foreach ($card as $pid => $c) {
+					echo $prefix, 'Player ', $pid, ' plays: ', $c, "\n";
+				}
+			}
+
+			if ($canRecurse) {
 				// NEW GAME
 				if ($isDebug) {
 					echo $prefix, 'Playing a sub-game to determine the winner...', "\n\n";
 				}
-				$subGame = [1 => array_slice($game[1], 0, $card[1]), 2 => array_slice($game[2], 0, $card[2])];
-				[$winner, $loser, $score, $gameId] = recursiveCombat($subGame, $gameId, $prefix . "\t");
+
+				$subGame = [];
+				foreach ($card as $pid => $c) {
+					$subGame[$pid] = array_slice($game[$pid], 0, $card[$pid]);
+				}
+
+				[$winner, $score, $gameId] = recursiveCombat($subGame, $gameId, $prefix . "\t");
 				if ($isDebug) {
 					echo "\n", $prefix, '...anyway, back to game ' . $myGameId . '.', "\n";
 				}
 			} else {
-				[$winner, $loser] = ($card[1] > $card[2]) ? [1, 2] : [2, 1];
+				$winner = array_keys($card, max($card))[0];
 			}
 
 			if ($isDebug) {
 				echo $prefix, 'Player ' . $winner . ' wins round ' . $round .' of game ' . $myGameId .'!', "\n";
 			}
 
-			$game[$winner] = array_merge($game[$winner], [$card[$winner], $card[$loser]]);
+			$winnerCard = [$card[$winner]];
+			unset($card[$winner]);
+			$game[$winner] = array_merge($game[$winner], $winnerCard, $card);
+
+			foreach ($card as $pid => $c) {
+				if (empty($game[$pid])) { unset($game[$pid]); }
+			}
 		}
 
-		[$winner, $loser] = empty($game[1]) ? [2, 1] : [1, 2];
+		$winner = array_keys($game)[0];
 
 		if ($isDebug) {
 			echo $prefix, 'The winner of game ' . $myGameId . ' is player ' . $winner . '!', "\n";
 
 			if ($myGameId == 1) {
 				echo "\n\n", $prefix, '== Post-game results ==', "\n";
-				echo $prefix, 'Player 1\'s deck: ', implode(', ', $game[1]), "\n";
-				echo $prefix, 'Player 2\'s deck: ', implode(', ', $game[2]), "\n";
+				foreach ($game as $pid => $deck) {
+					echo $prefix, 'Player ', $pid, '\'s deck: ', implode(', ', $deck), "\n";
+				}
 			}
 		}
 
-		return [$winner, $loser, calculateScore($game[$winner]), $gameId];
+		return [$winner, calculateScore($game[$winner]), $gameId];
 	}
 
-	[$winner, $loser, $score] = combat($players);
+	[$winner, $score] = combat($players);
 	echo 'Part 1: ', $score, "\n";
 
-	[$winner, $loser, $score] = recursiveCombat($players);
+	[$winner, $score] = recursiveCombat($players);
 	echo 'Part 2: ', $score, "\n";
