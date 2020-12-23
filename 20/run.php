@@ -308,8 +308,7 @@
 
 	echo 'Part 1: ', array_product($cornerTiles), "\n";
 
-//	$grid = findValidGrid($tiles, $cornerTiles[0]);
-$grid = findValidGrid($tiles, 3079);
+	$grid = findValidGrid($tiles, $cornerTiles[0]);
 	if ($grid == FALSE) { die('Unable to find valid grid layout.'."\n"); }
 
 	if (isDebug()) {
@@ -320,8 +319,22 @@ $grid = findValidGrid($tiles, 3079);
 	$map = new TileInfo(createMap($tiles, $grid));
 	$monster = getSeaMonster();
 
-	foreach ($map->orientations[0]->block as $row) {
-		echo implode('', $row), "\n";
+	if (isDebug()) {
+		$debugMap = $map->orientations[0]->block;
+		$width = count($debugMap[0]);
+		$s = 'Final Map';
+		$titlePadding = ($width - strlen($s)) / 2;
+
+		echo "\n";
+		echo '┍', str_repeat('━', $width), '┑', "\n";
+		echo '│', sprintf('%'.floor($titlePadding).'s%s%'.ceil($titlePadding).'s', '', $s, ''), '│', "\n";
+		echo '┕', str_repeat('━', $width), '┙', "\n";
+		echo "\n";
+		echo '┍', str_repeat('━', $width), '┑', "\n";
+		foreach ($debugMap as $row) {
+			echo '│', implode('', $row), '│', "\n";
+		}
+		echo '┕', str_repeat('━', $width), '┙', "\n";
 	}
 
 	foreach ($map->orientations as $oid => $pmap) {
