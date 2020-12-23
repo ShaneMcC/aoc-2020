@@ -5,9 +5,7 @@
 
 	class Cup {
 		public $val = 0;
-
 		public $next = null;
-		public $prev = null;
 
 		public function __construct($val) {
 			$this->val = $val;
@@ -20,7 +18,6 @@
 		foreach (str_split($input) as $c) {
 			$cup = new Cup($c);
 			$cups[$c] = $cup;
-			$cup->prev = $prev;
 			if ($prev != null) { $prev->next = $cup; }
 			$prev = $cup;
 		}
@@ -28,15 +25,11 @@
 		for ($c = count($cups) + 1; $c <= $totalNeeded; $c++) {
 			$cup = new Cup($c);
 			$cups[$c] = $cup;
-			$cup->prev = $prev;
 			if ($prev != null) { $prev->next = $cup; }
 			$prev = $cup;
 		}
 
-		$first = $cups[array_keys($cups)[0]];
-
-		$first->prev = $prev;
-		$prev->next = $first;
+		$prev->next = $cups[array_keys($cups)[0]];
 
 		return $cups;
 	}
@@ -53,7 +46,7 @@
 			if ($isDebug) {
 				echo '-- move ', $move, ' --', "\n";
 				echo 'cups:';
-				$indexCup = $currentCup->prev->prev;
+				$indexCup = $currentCup;
 				for ($c = 0; $c < min(count($cups), 14); $c++) {
 					echo ($indexCup == $currentCup) ? ' (' : '  ';
 					echo $indexCup->val;
@@ -69,7 +62,6 @@
 
 			// Remove from circle
 			$currentCup->next = $pickupEnd->next;
-			$pickupEnd->next->prev = $currentCup;
 
 			// Icky.
 			$pickupLabels = [$pickupStart->val, $pickupStart->next->val, $pickupStart->next->next->val];
@@ -91,9 +83,7 @@
 
 			// Splice into circle.
 			$destCup->next = $pickupStart;
-			$pickupStart->prev = $destCup;
 			$pickupEnd->next = $afterCup;
-			$afterCup->prev = $pickupEnd;
 
 			// Move Current Cup
 			$currentCup = $currentCup->next;
