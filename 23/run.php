@@ -15,30 +15,25 @@
 	}
 
 	function getCups($input, $totalNeeded = 0) {
-		$first = NULL;
-		$prev = NULL;
-
 		$cups = [];
-
+		$prev = NULL;
 		foreach (str_split($input) as $c) {
 			$cup = new Cup($c);
 			$cups[$c] = $cup;
-
 			$cup->prev = $prev;
-			if ($prev == null) { $first = $cup; }
-			else { $prev->next = $cup; }
+			if ($prev != null) { $prev->next = $cup; }
 			$prev = $cup;
 		}
 
-		for ($i = count($cups) + 1; $i <= $totalNeeded; $i++) {
-			$cup = new Cup($i);
-			$cups[$i] = $cup;
-
+		for ($c = count($cups) + 1; $c <= $totalNeeded; $c++) {
+			$cup = new Cup($c);
+			$cups[$c] = $cup;
 			$cup->prev = $prev;
-			if ($prev == null) { $first = $cup; }
-			else { $prev->next = $cup; }
+			if ($prev != null) { $prev->next = $cup; }
 			$prev = $cup;
 		}
+
+		$first = $cups[array_keys($cups)[0]];
 
 		$first->prev = $prev;
 		$prev->next = $first;
@@ -59,7 +54,7 @@
 				echo '-- move ', $move, ' --', "\n";
 				echo 'cups:';
 				$indexCup = $currentCup->prev->prev;
-				for ($c = 0; $c < 14; $c++) {
+				for ($c = 0; $c < min(count($cups), 14); $c++) {
 					echo ($indexCup == $currentCup) ? ' (' : '  ';
 					echo $indexCup->val;
 					echo ($indexCup == $currentCup) ? ')' : ' ';
@@ -74,8 +69,7 @@
 
 			// Remove from circle
 			$currentCup->next = $pickupEnd->next;
-			$pickupEnd->prev = $currentCup;
-
+			$pickupEnd->next->prev = $currentCup;
 
 			// Icky.
 			$pickupLabels = [$pickupStart->val, $pickupStart->next->val, $pickupStart->next->next->val];
