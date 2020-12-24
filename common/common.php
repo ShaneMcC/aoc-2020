@@ -238,6 +238,31 @@
 		return [$minX, $minY, $maxX, $maxY];
 	}
 
+	function drawMap($map, $border = false, $title = '') {
+		$width = count($map[0]);
+
+		if ($border) {
+			echo "\n";
+
+			if (!empty($title)) {
+				$titlePadding = ($width - strlen($title)) / 2;
+				echo '┍', str_repeat('━', $width), '┑', "\n";
+				echo '│', sprintf('%'.floor($titlePadding).'s%s%'.ceil($titlePadding).'s', '', $title, ''), '│', "\n";
+				echo '┕', str_repeat('━', $width), '┙', "\n";
+				echo "\n";
+			}
+
+			echo '┍', str_repeat('━', $width), '┑', "\n";
+		}
+		foreach ($map as $row) {
+			if ($border) { echo '│'; }
+			echo implode('', $row);
+			if ($border) { echo '│'; }
+			echo "\n";
+		}
+		if ($border) {  echo '┕', str_repeat('━', $width), '┙', "\n"; }
+	}
+
 	/**
 	 * Get all the permutations of an array of items.
 	 * (From: http://stackoverflow.com/a/13194803/310353)

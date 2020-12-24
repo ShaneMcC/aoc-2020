@@ -320,21 +320,7 @@
 	$monster = getSeaMonster();
 
 	if (isDebug()) {
-		$debugMap = $map->orientations[0]->block;
-		$width = count($debugMap[0]);
-		$s = 'Final Map';
-		$titlePadding = ($width - strlen($s)) / 2;
-
-		echo "\n";
-		echo '┍', str_repeat('━', $width), '┑', "\n";
-		echo '│', sprintf('%'.floor($titlePadding).'s%s%'.ceil($titlePadding).'s', '', $s, ''), '│', "\n";
-		echo '┕', str_repeat('━', $width), '┙', "\n";
-		echo "\n";
-		echo '┍', str_repeat('━', $width), '┑', "\n";
-		foreach ($debugMap as $row) {
-			echo '│', implode('', $row), '│', "\n";
-		}
-		echo '┕', str_repeat('━', $width), '┙', "\n";
+		drawMap($map->orientations[0]->block, true, 'Final Map');
 	}
 
 	foreach ($map->orientations as $oid => $pmap) {
