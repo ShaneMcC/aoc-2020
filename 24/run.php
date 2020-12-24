@@ -3,53 +3,29 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
 
-	function getTile($directions) {
-		// Hex Grids: https://www.redblobgames.com/grids/hexagons/
-		$r = $q = 0;
-
-		// Pointy-Topped Hexes.
-		// https://www.redblobgames.com/grids/hexagons/#coordinates-cube
-		foreach ($directions as $dir) {
-			switch ($dir) {
-				case 'nw':
-					$r--;
-					break;
-				case 'ne':
-					$q++;
-					$r--;
-					break;
-				case 'sw':
-					$q--;
-					$r++;
-					break;
-				case 'se':
-					$r++;
-					break;
-				case 'w':
-					$q--;
-					break;
-				case 'e':
-					$q++;
-					break;
-			}
-		}
-
-		return [$r, $q];
+	// Hex Grids: https://www.redblobgames.com/grids/hexagons/
+	// Pointy-Topped Hexes.
+	// https://www.redblobgames.com/grids/hexagons/#coordinates-cube
+	function getAdjacent($q, $r) {
+		return ['nw' => [$q, $r - 1],
+		        'ne' => [$q + 1, $r - 1],
+		        'sw' => [$q - 1, $r + 1],
+		        'se' => [$q, $r + 1],
+		        'w' => [$q - 1, $r],
+		        'e' => [$q + 1, $r],
+		       ];
 	}
 
 	function generateInitialState($input) {
 		$map = [];
 		foreach ($input as $line) {
-			$directions = [];
+			$r = $q = 0;
 			for ($i = 0; $i < strlen($line); $i++) {
 				$move = $line[$i];
-				if ($move == 's' || $move == 'n') {
-					$move .= $line[++$i];
-				}
-				$directions[] = $move;
-			}
+				if ($move == 's' || $move == 'n') { $move .= $line[++$i]; }
 
-			[$r, $q] = getTile($directions);
+				[$q, $r] = getAdjacent($q, $r)[$move];
+			}
 
 			if (isset($map[$r][$q])) {
 				unset($map[$r][$q]);
@@ -66,9 +42,8 @@
 	function countBlackTiles($map) {
 		$count = 0;
 		foreach ($map as $r => $qR) {
-			foreach ($qR as $q => $c) {
-				if ($c === 1) { $count++; }
-			}
+			$acv = array_count_values($qR);
+			$count += isset($acv[1]) ? $acv[1] : 0;
 		}
 		return $count;
 	}
@@ -81,17 +56,11 @@
 		for ($r = $minR - 2; $r < $maxR + 2; $r++) {
 			for ($q = $minQ - 2; $q < $maxQ + 2; $q++) {
 
-				$adjacent = [[$r - 1, $q],
-				             [$r - 1, $q + 1],
-				             [$r + 1, $q - 1],
-				             [$r + 1, $q],
-				             [$r, $q - 1],
-				             [$r, $q + 1],
-				            ];
+				$adjacent = getAdjacent($q, $r);
 
 				$ac = 0;
 				foreach ($adjacent as $t) {
-					[$tR, $tQ] = $t;
+					[$tQ, $tR] = $t;
 
 					if (isset($map[$tR][$tQ]) && $map[$tR][$tQ] === 1) {
 						$ac++;
