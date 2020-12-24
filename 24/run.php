@@ -37,35 +37,43 @@
 		return [$r, $q];
 	}
 
-	$map = [];
-	foreach ($input as $line) {
-		$directions = [];
-		for ($i = 0; $i < strlen($line); $i++) {
-			$move = $line[$i];
-			if ($move == 's' || $move == 'n') {
-				$move .= $line[++$i];
+	function generateInitialState($input) {
+		$map = [];
+		foreach ($input as $line) {
+			$directions = [];
+			for ($i = 0; $i < strlen($line); $i++) {
+				$move = $line[$i];
+				if ($move == 's' || $move == 'n') {
+					$move .= $line[++$i];
+				}
+				$directions[] = $move;
 			}
-			$directions[] = $move;
+
+			[$r, $q] = getTile($directions);
+
+			if (isset($map[$r][$q])) {
+				unset($map[$r][$q]);
+				if (empty($map[$r])) { unset($map[$r]); }
+			} else {
+				if (!isset($map[$r])) { $map[$r] = []; }
+				$map[$r][$q] = 1;
+			}
 		}
 
-		[$r, $q] = getTile($directions);
-
-		if (!isset($map[$r])) { $map[$r] = []; }
-		if (!isset($map[$r][$q])) { $map[$r][$q] = 0; }
-
-		$map[$r][$q] = ($map[$r][$q] === 0) ? 1 : 0;
+		return $map;
 	}
 
-	$part1 = 0;
-	foreach ($map as $r => $qR) {
-		foreach ($qR as $q => $c) {
-			if ($c === 1) { $part1++; }
+	function countBlackTiles($map) {
+		$count = 0;
+		foreach ($map as $r => $qR) {
+			foreach ($qR as $q => $c) {
+				if ($c === 1) { $count++; }
+			}
 		}
+		return $count;
 	}
 
-	echo 'Part 1: ', $part1, "\n";
-
-	for ($day = 1; $day <= 100; $day++) {
+	function step($map) {
 		$newMap = $map;
 
 		[$minQ, $minR, $maxQ, $maxR] = getBoundingBox($map);
@@ -87,12 +95,13 @@
 
 					if (isset($map[$tR][$tQ]) && $map[$tR][$tQ] === 1) {
 						$ac++;
+						if ($ac > 2) { break; }
 					}
 				}
 
 				if (isset($map[$r][$q]) && $map[$r][$q] == 1) {
 					if ($ac == 0 || $ac > 2) {
-						$newMap[$r][$q] = 0;
+						unset($newMap[$r][$q]);
 					}
 				} else {
 					if ($ac == 2) {
@@ -101,13 +110,17 @@
 				}
 			}
 		}
-		$map = $newMap;
+
+		return $newMap;
 	}
 
-	$part2 = 0;
-	foreach ($newMap as $r => $qR) {
-		foreach ($qR as $q => $c) {
-			if ($c === 1) { $part2++; }
-		}
+	$map = generateInitialState($input);
+	$part1 = countBlackTiles($map);
+	echo 'Part 1: ', $part1, "\n";
+
+	for ($day = 1; $day <= 100; $day++) {
+		$map = step($map);
 	}
+
+	$part2 = countBlackTiles($map);
 	echo 'Part 2: ', $part2, "\n";
