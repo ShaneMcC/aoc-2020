@@ -6,24 +6,10 @@
 	$ourPublicKey = $input[0];
 	$doorPublicKey = $input[1];
 
-	function getKey($loopSize, $subject) {
+	function getLoopSizeFor($key) {
 		$value = 1;
-		for ($i = 0; $i < $loopSize; $i++) {
-			$value *= $subject;
-			$value = $value % 20201227;
-		}
-
-		return $value;
-	}
-
-	function getKeyFor($key) {
-		$i = 0;
-		$subject = 7;
-		$value = 1;
-		while (true) {
-			$i++;
-			$value *= $subject;
-			$value = $value % 20201227;
+		for ($i = 1 ;; $i++) {
+			$value = ($value * 7) % 20201227;
 
 			if ($value == $key) {
 				return $i;
@@ -31,8 +17,17 @@
 		}
 	}
 
-	$ourLoop = getKeyFor($ourPublicKey);
-	$doorLoop = getKeyFor($doorPublicKey);
+	function getKey($loopSize, $subject) {
+		$value = 1;
+		for ($i = 0; $i < $loopSize; $i++) {
+			$value = ($value * $subject) % 20201227;
+		}
+
+		return $value;
+	}
+
+	$ourLoop = getLoopSizeFor($ourPublicKey);
+	$doorLoop = getLoopSizeFor($doorPublicKey);
 
 	if (isDebug()) {
 		echo 'Our Loop: ', $ourLoop, "\n";
