@@ -3,16 +3,13 @@
 	require_once(dirname(__FILE__) . '/../common/common.php');
 	$input = getInputLines();
 
-	$ourPublicKey = $input[0];
-	$doorPublicKey = $input[1];
-
-	function getLoopSizeFor($key) {
+	function getLoopSizeFor($keys) {
 		$value = 1;
 		for ($i = 1 ;; $i++) {
 			$value = ($value * 7) % 20201227;
 
-			if ($value == $key) {
-				return $i;
+			if ($c = array_search($value, $keys)) {
+				return [$c, $i];
 			}
 		}
 	}
@@ -26,14 +23,8 @@
 		return $value;
 	}
 
-	$ourLoop = getLoopSizeFor($ourPublicKey);
-	$doorLoop = getLoopSizeFor($doorPublicKey);
-
-	if (isDebug()) {
-		echo 'Our Loop: ', $ourLoop, "\n";
-		echo 'Door Loop: ', $doorLoop, "\n";
-	}
-
-	$doorCode = getKey($doorLoop, $ourPublicKey);
+	[$whichKey, $loopSize] = getLoopSizeFor($input);
+	$whichKey = ($whichKey == 0) ? 1 : 0;
+	$doorCode = getKey($loopSize, $input[$whichKey]);
 
 	echo 'Part 1 - Door Code: ', $doorCode, "\n";
